@@ -3,6 +3,7 @@
 
 #include "IBaseScene.h"
 #include "Globals.h"
+#include "SceneManager.h"
 
 class MainMenuScene :
     public IBaseScene

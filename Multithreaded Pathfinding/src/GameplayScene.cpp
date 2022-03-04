@@ -2,12 +2,14 @@
 
 GameplayScene::GameplayScene()
 {
+	DEBUG_INFO("Creating " << typeid(*this).name());
 }
 
 ////////////////////////////////////////////////////////////
 
 GameplayScene::~GameplayScene()
 {
+	DEBUG_INFO("Destroying " << typeid(*this).name());
 }
 
 ////////////////////////////////////////////////////////////
@@ -28,6 +30,9 @@ void GameplayScene::processEvents()
 			case sf::Keyboard::Escape:
 				m_window->close();
 				break;
+			case sf::Keyboard::Space:
+				SceneManager::getInstance()->setScene(SceneType::MAIN_MENU);
+				return;
 			default:
 				break;
 			}
