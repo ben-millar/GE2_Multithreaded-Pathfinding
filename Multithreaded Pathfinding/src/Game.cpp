@@ -4,7 +4,7 @@ void Game::run()
 {
 	m_window = createWindow("GE2 | Multithreaded Pathfinding");
 	m_window->setKeyRepeatEnabled(false);
-	m_window->setView({ {600.f,380.f}, { 1200.f, 760.f } });
+	m_window->setView({ {960.f, 540.f}, { 1920.f, 1080.f } });
 
 	auto sceneManager = SceneManager::getInstance();
 	sceneManager->setWindow(m_window);
@@ -12,7 +12,7 @@ void Game::run()
 	sceneManager->registerScene<GameplayScene>(SceneType::GAMEPLAY);
 	sceneManager->registerScene<MainMenuScene>(SceneType::MAIN_MENU);
 
-	sceneManager->setScene(SceneType::MAIN_MENU);
+	sceneManager->setScene(SceneType::GAMEPLAY);
 
 	sf::Clock clock;
 	sf::Time lag = sf::Time::Zero;

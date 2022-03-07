@@ -3,6 +3,8 @@
 GameplayScene::GameplayScene()
 {
 	DEBUG_INFO("Creating " << typeid(*this).name());
+
+	Graph* graph = new Graph(1000, 1000);
 }
 
 ////////////////////////////////////////////////////////////
@@ -30,9 +32,9 @@ void GameplayScene::processEvents()
 			case sf::Keyboard::Escape:
 				m_window->close();
 				break;
-			case sf::Keyboard::Space:
-				SceneManager::getInstance()->setScene(SceneType::MAIN_MENU);
-				return;
+			//case sf::Keyboard::Space:
+			//	SceneManager::getInstance()->setScene(SceneType::MAIN_MENU);
+			//	return;
 			default:
 				break;
 			}

@@ -3,6 +3,7 @@
 
 #include "IBaseScene.h"
 #include "Globals.h"
+#include "Graph.h"
 #include "SceneManager.h"
 
 class GameplayScene :
