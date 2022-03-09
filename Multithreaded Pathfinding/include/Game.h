@@ -3,10 +3,10 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "Globals.h"
-
-#include "SceneManager.h"
 #include "GameplayScene.h"
+#include "Globals.h"
+#include "SceneManager.h"
+#include "TextureManager.h"
 #include "MainMenuScene.h"
 
 using namespace std;
@@ -22,6 +22,11 @@ public:
 	/// </summary>
 	void run();
 
+	/// <summary>
+	/// Loads textures into our texture manager
+	/// </summary>
+	void loadTextures();
+
 private:
 	/// <summary>
 	/// Creates an sf::RenderWindow on the stack
@@ -29,6 +34,7 @@ private:
 	/// <param name="t_title">Title for the sf::RenderWindow</param>
 	/// <returns>A pointer to a stack-allocated sf::RenderWindow</returns>
 	sf::RenderWindow* createWindow(std::string t_title);
+
 	sf::RenderWindow* m_window{ nullptr };
 };
 

@@ -23,6 +23,8 @@ public:
 
 	void generateGraph();
 
+	size_t mouseClickToIndex(sf::Vector2f t_position);
+
 	Path findPath(Point t_origin, Point t_destination);
 
 private:

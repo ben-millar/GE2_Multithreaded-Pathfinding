@@ -51,6 +51,16 @@ void Graph::generateGraph()
 
 ////////////////////////////////////////////////////////////
 
+size_t Graph::mouseClickToIndex(sf::Vector2f t_position)
+{
+	int row = t_position.y / ROWS;
+	int col = t_position.x / COLS;
+
+	return pointToIndex({ col, row });
+}
+
+////////////////////////////////////////////////////////////
+
 Graph::Path Graph::findPath(Point t_origin, Point t_destination)
 {
 	auto cmp = [&](int i1, int i2) {
