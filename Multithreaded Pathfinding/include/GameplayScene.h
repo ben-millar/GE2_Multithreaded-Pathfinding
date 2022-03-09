@@ -31,5 +31,7 @@ public:
 
 private:
 
+    Graph* m_graph;
+
 };
 #endif

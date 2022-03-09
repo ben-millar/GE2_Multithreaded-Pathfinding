@@ -4,7 +4,11 @@ GameplayScene::GameplayScene()
 {
 	DEBUG_INFO("Creating " << typeid(*this).name());
 
-	Graph* graph = new Graph(1000, 1000);
+	m_graph = new Graph(10, 10);
+	Graph::Path path = m_graph->findPath({ 0,0 }, { 9,9 });
+
+	while (!path.empty())
+		DEBUG_INFO(path.top()), path.pop();
 }
 
 ////////////////////////////////////////////////////////////
