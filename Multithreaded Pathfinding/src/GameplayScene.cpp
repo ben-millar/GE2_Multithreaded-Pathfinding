@@ -4,18 +4,23 @@ GameplayScene::GameplayScene()
 {
 	DEBUG_INFO("Creating " << typeid(*this).name());
 
-	m_graph = new Graph(10, 10);
-	Graph::Path path = m_graph->findPath({ 0,0 }, { 9,9 });
+	m_graph = new Graph(100, 100);
+
+	Pathfinder pathfinder(100, 100);
+	Pathfinder::Path path = pathfinder.findPath({ 0,0 }, { 99,99 }, m_graph);
 
 	while (!path.empty())
-		DEBUG_INFO(path.top()), path.pop();
+	{
+		DEBUG_INFO(path.top());
+		path.pop();
+	}
 
 	TextureManager* tm = TextureManager::getInstance();
 
-	m_background.setTexture(*tm->getTexture("100_grid"));
+	m_background.setTexture(*tm->getTexture("30_grid"));
 	m_background.setPosition({ 460.f, 0.f });
 
-	m_player.setTexture(*tm->getTexture("100_player"));
+	m_player.setTexture(*tm->getTexture("30_player"));
 	m_player.setPosition({ -100.f,-100.f });
 }
 
@@ -109,10 +114,10 @@ void GameplayScene::placePlayer(sf::Vector2f t_position)
 	sf::Vector2f localPos = worldPos - OFFSET;
 
 	static const sf::Vector2i GRID_DIMENSIONS = { 1000, 1000 };
-	static const int ROWS = 100;
-	static const int COLS = 100;
-	static const int CELL_WIDTH = GRID_DIMENSIONS.x / COLS;
-	static const int CELL_HEIGHT = GRID_DIMENSIONS.y / ROWS;
+	static const float ROWS = 30.f;
+	static const float COLS = 30.f;
+	static const float CELL_WIDTH = GRID_DIMENSIONS.x / COLS;
+	static const float CELL_HEIGHT = GRID_DIMENSIONS.y / ROWS;
 
 	int row = localPos.y / CELL_WIDTH;
 	int col = localPos.x / CELL_HEIGHT;
@@ -133,12 +138,12 @@ void GameplayScene::placeNPC(sf::Vector2f t_position)
 	sf::Vector2f localPos = worldPos - OFFSET;
 
 	static const sf::Vector2i GRID_DIMENSIONS = { 1000, 1000 };
-	static const int ROWS = 100;
-	static const int COLS = 100;
-	static const int CELL_WIDTH = GRID_DIMENSIONS.x / COLS;
-	static const int CELL_HEIGHT = GRID_DIMENSIONS.y / ROWS;
+	static const float ROWS = 30.f;
+	static const float COLS = 30.f;
+	static const float CELL_WIDTH = GRID_DIMENSIONS.x / COLS;
+	static const float CELL_HEIGHT = GRID_DIMENSIONS.y / ROWS;
 
-	static sf::Texture* tx = TextureManager::getInstance()->getTexture("100_npc");
+	static sf::Texture* tx = TextureManager::getInstance()->getTexture("30_wall");
 	sf::Sprite spr;
 	spr.setTexture(*tx);
 	

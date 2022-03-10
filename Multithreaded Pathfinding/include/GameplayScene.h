@@ -4,6 +4,7 @@
 #include "IBaseScene.h"
 #include "Globals.h"
 #include "Graph.h"
+#include "Pathfinder.h"
 #include "SceneManager.h"
 #include "TextureManager.h"
 

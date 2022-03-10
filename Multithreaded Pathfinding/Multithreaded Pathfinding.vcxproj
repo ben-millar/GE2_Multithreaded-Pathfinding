@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -23,9 +23,9 @@
     <ClInclude Include="include\GameplayScene.h" />
     <ClInclude Include="include\Globals.h" />
     <ClInclude Include="include\Graph.h" />
-    <ClInclude Include="include\GridRenderer.h" />
     <ClInclude Include="include\IBaseScene.h" />
     <ClInclude Include="include\MainMenuScene.h" />
+    <ClInclude Include="include\Pathfinder.h" />
     <ClInclude Include="include\SceneManager.h" />
     <ClInclude Include="include\TextureManager.h" />
   </ItemGroup>
@@ -33,9 +33,9 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\GameplayScene.cpp" />
     <ClCompile Include="src\Graph.cpp" />
-    <ClCompile Include="src\GridRenderer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainMenuScene.cpp" />
+    <ClCompile Include="src\Pathfinder.cpp" />
     <ClCompile Include="src\TextureManager.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

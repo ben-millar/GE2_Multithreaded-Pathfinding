@@ -47,6 +47,7 @@ void Game::loadTextures()
 	tm->loadTexture("30_grid", "assets/images/30_grid.png");
 	tm->loadTexture("30_player", "assets/images/30_player.png");
 	tm->loadTexture("30_npc", "assets/images/30_npc.png");
+	tm->loadTexture("30_wall", "assets/images/30_wall.png");
 
 	tm->loadTexture("100_grid", "assets/images/100_grid.png");
 	tm->loadTexture("100_player", "assets/images/100_player.png");
