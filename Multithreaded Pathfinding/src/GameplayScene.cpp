@@ -69,6 +69,7 @@ void GameplayScene::processEvents()
 					break;
 				case sf::Mouse::Middle:
 					m_graph->setWall(mouseClickToPoint(worldPos));
+					placeWall(worldPos);
 					break;
 				case sf::Mouse::Right:
 					placePlayer(worldPos);
@@ -184,6 +185,23 @@ void GameplayScene::placeNPC(sf::Vector2f t_position)
 
 ////////////////////////////////////////////////////////////
 
+void GameplayScene::placeWall(sf::Vector2f t_position)
+{
+	static sf::Texture* tx = TextureManager::getInstance()->getTexture("30_wall");
+	sf::Sprite spr;
+	spr.setTexture(*tx);
+
+	Point p = mouseClickToPoint(t_position);
+
+	sf::Vector2f pos = { (float)(p.col * CELL_WIDTH), (float)(p.row * CELL_HEIGHT) };
+	pos += BOARD_OFFSET;
+
+	spr.setPosition(pos);
+	m_walls.push_back(spr);
+}
+
+////////////////////////////////////////////////////////////
+
 void GameplayScene::render()
 {
 	m_window->clear(sf::Color::Black);
@@ -192,6 +210,9 @@ void GameplayScene::render()
 	m_window->draw(m_player);
 
 	for (auto& spr : m_NPCs)
+		m_window->draw(spr);
+
+	for (auto& spr : m_walls)
 		m_window->draw(spr);
 
 	m_window->display();
