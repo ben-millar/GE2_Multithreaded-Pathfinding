@@ -4,16 +4,8 @@ GameplayScene::GameplayScene()
 {
 	DEBUG_INFO("Creating " << typeid(*this).name());
 
-	m_graph = new Graph(100, 100);
-
-	Pathfinder pathfinder(100, 100);
-	Pathfinder::Path path = pathfinder.findPath({ 0,0 }, { 99,99 }, m_graph);
-
-	while (!path.empty())
-	{
-		DEBUG_INFO(path.top());
-		path.pop();
-	}
+	m_graph = new Graph(30, 30);
+	m_pathfinder = new Pathfinder(30, 30);
 
 	TextureManager* tm = TextureManager::getInstance();
 
@@ -29,6 +21,9 @@ GameplayScene::GameplayScene()
 GameplayScene::~GameplayScene()
 {
 	DEBUG_INFO("Destroying " << typeid(*this).name());
+
+	delete m_graph;
+	delete m_pathfinder;
 }
 
 ////////////////////////////////////////////////////////////
@@ -49,6 +44,9 @@ void GameplayScene::processEvents()
 			case sf::Keyboard::Escape:
 				m_window->close();
 				break;
+			case sf::Keyboard::P:
+				findPath();
+				break;
 			//case sf::Keyboard::Space:
 			//	SceneManager::getInstance()->setScene(SceneType::MAIN_MENU);
 			//	return;
@@ -59,29 +57,35 @@ void GameplayScene::processEvents()
 
 		if (e.type == sf::Event::MouseButtonReleased)
 		{
-			if (e.mouseButton.button == sf::Mouse::Left)
-			{
-				sf::Vector2i pixelPos = sf::Mouse::getPosition(*m_window);
-				sf::Vector2f worldPos = m_window->mapPixelToCoords(pixelPos);
+			sf::Vector2i pixelPos = sf::Mouse::getPosition(*m_window);
+			sf::Vector2f worldPos = m_window->mapPixelToCoords(pixelPos);
 
-				placeNPC(worldPos);
-			}
-			else if (e.mouseButton.button == sf::Mouse::Right)
+			if (m_background.getGlobalBounds().contains(worldPos))
 			{
-				sf::Vector2i pixelPos = sf::Mouse::getPosition(*m_window);
-				sf::Vector2f worldPos = m_window->mapPixelToCoords(pixelPos);
-
-				placePlayer(worldPos);
+				switch (e.mouseButton.button)
+				{
+				case sf::Mouse::Left:
+					placeNPC(worldPos);
+					break;
+				case sf::Mouse::Middle:
+					m_graph->setWall(mouseClickToPoint(worldPos));
+					break;
+				case sf::Mouse::Right:
+					placePlayer(worldPos);
+					break;
+				default:
+					break;
+				}
 			}
 		}
 
 		if (e.type == sf::Event::MouseWheelMoved)
 		{	
-			sf::View v = m_window->getView();
+			//sf::View v = m_window->getView();
 
-			v.zoom(1 - e.mouseWheel.delta * 0.05f);
+			//v.zoom(1 - e.mouseWheel.delta * 0.05f);
 
-			m_window->setView(v);
+			//m_window->setView(v);
 		}
 
 		if (e.type == sf::Event::MouseMoved)
@@ -106,24 +110,57 @@ void GameplayScene::update(sf::Time t_dT)
 
 ////////////////////////////////////////////////////////////
 
+void GameplayScene::findPath()
+{
+	static const sf::Vector2f BOARD_OFFSET = { 460.f, 0.f };
+
+	sf::Vector2f playerPos = m_player.getPosition() - BOARD_OFFSET;
+	sf::Vector2f npcPos = m_NPCs.at(0).getPosition() - BOARD_OFFSET;
+	
+	Point player = {
+		(int)(playerPos.y / CELL_WIDTH),
+		(int)(playerPos.x / CELL_HEIGHT)
+	};
+
+	Point npc = {
+		(int)(npcPos.y / CELL_WIDTH),
+		(int)(npcPos.x / CELL_HEIGHT)
+	};
+
+	Pathfinder::Path path = m_pathfinder->findPath(npc, player, m_graph);
+
+	while (!path.empty())
+	{
+		int index = path.top();
+		path.pop();
+
+		int row = index / COLS;
+		int col = index % COLS;
+
+		DEBUG_INFO(row << ", " << col);
+	}
+}
+
+////////////////////////////////////////////////////////////
+
+Point GameplayScene::mouseClickToPoint(sf::Vector2f t_mousePos)
+{
+	sf::Vector2f localPos = t_mousePos - BOARD_OFFSET;
+
+	int row = (int)(localPos.y / CELL_WIDTH);
+	int col = (int)(localPos.x / CELL_HEIGHT);
+
+	return Point(row, col);
+}
+
+////////////////////////////////////////////////////////////
+
 void GameplayScene::placePlayer(sf::Vector2f t_position)
 {
-	static const sf::Vector2f OFFSET = { 460.f, 0.f };
+	Point p = mouseClickToPoint(t_position);
 
-	sf::Vector2f worldPos = t_position;
-	sf::Vector2f localPos = worldPos - OFFSET;
-
-	static const sf::Vector2i GRID_DIMENSIONS = { 1000, 1000 };
-	static const float ROWS = 30.f;
-	static const float COLS = 30.f;
-	static const float CELL_WIDTH = GRID_DIMENSIONS.x / COLS;
-	static const float CELL_HEIGHT = GRID_DIMENSIONS.y / ROWS;
-
-	int row = localPos.y / CELL_WIDTH;
-	int col = localPos.x / CELL_HEIGHT;
-
-	sf::Vector2f pos = { (float)(col * CELL_WIDTH), (float)(row * CELL_HEIGHT) };
-	pos += OFFSET;
+	sf::Vector2f pos = { (float)(p.col * CELL_WIDTH), (float)(p.row * CELL_HEIGHT) };
+	pos += BOARD_OFFSET;
 
 	m_player.setPosition(pos);
 }
@@ -132,26 +169,14 @@ void GameplayScene::placePlayer(sf::Vector2f t_position)
 
 void GameplayScene::placeNPC(sf::Vector2f t_position)
 {
-	static const sf::Vector2f OFFSET = { 460.f, 0.f };
-
-	sf::Vector2f worldPos = t_position;
-	sf::Vector2f localPos = worldPos - OFFSET;
-
-	static const sf::Vector2i GRID_DIMENSIONS = { 1000, 1000 };
-	static const float ROWS = 30.f;
-	static const float COLS = 30.f;
-	static const float CELL_WIDTH = GRID_DIMENSIONS.x / COLS;
-	static const float CELL_HEIGHT = GRID_DIMENSIONS.y / ROWS;
-
-	static sf::Texture* tx = TextureManager::getInstance()->getTexture("30_wall");
+	static sf::Texture* tx = TextureManager::getInstance()->getTexture("30_npc");
 	sf::Sprite spr;
 	spr.setTexture(*tx);
-	
-	int row = localPos.y / CELL_WIDTH;
-	int col = localPos.x / CELL_HEIGHT;
 
-	sf::Vector2f pos = { (float)(col * CELL_WIDTH), (float)(row * CELL_HEIGHT) };
-	pos += OFFSET;
+	Point p = mouseClickToPoint(t_position);
+
+	sf::Vector2f pos = { (float)(p.col * CELL_WIDTH), (float)(p.row * CELL_HEIGHT) };
+	pos += BOARD_OFFSET;
 
 	spr.setPosition(pos);
 	m_NPCs.push_back(spr);

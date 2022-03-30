@@ -9,7 +9,6 @@
 class Pathfinder
 {
 public:
-	using Point = Graph::Point;
 	using Path = std::stack<int>;
 
 	Pathfinder(int t_rows, int t_cols);
@@ -23,9 +22,6 @@ private:
 
 	// Cost of pathing through this node
 	float* m_distance;
-
-	// Cost of pathing through this node
-	int* m_cost;
 
 	// A function of path cost and euclidian distance
 	float* m_heuristic;

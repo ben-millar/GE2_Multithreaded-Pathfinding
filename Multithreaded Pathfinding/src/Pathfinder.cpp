@@ -6,9 +6,6 @@ Pathfinder::Pathfinder(int t_rows, int t_cols) :
 	m_distance = new float[ROWS * COLS];
 	std::fill_n(m_distance, ROWS * COLS, 0.f);
 
-	m_cost = new int[ROWS * COLS];
-	std::fill_n(m_cost, ROWS * COLS, 0);
-
 	m_heuristic = new float[ROWS * COLS];
 	std::fill_n(m_heuristic, ROWS * COLS, 0.f);
 
@@ -24,7 +21,6 @@ Pathfinder::Pathfinder(int t_rows, int t_cols) :
 Pathfinder::~Pathfinder()
 {
 	delete[] m_distance;
-	delete[] m_cost;
 	delete[] m_heuristic;
 	delete[] m_previous;
 	delete[] m_visited;
@@ -40,11 +36,12 @@ Pathfinder::Path Pathfinder::findPath(Point t_origin, Point t_destination, Graph
 	};
 
 	// Get the indices of our start and end points
-	size_t start = t_graph->pointToIndex({ t_origin.x, t_origin.y });
-	size_t goal = t_graph->pointToIndex({ t_destination.x, t_destination.y });
+	size_t start = t_graph->pointToIndex({ t_origin.row, t_origin.col });
+	size_t goal = t_graph->pointToIndex({ t_destination.row, t_destination.col });
 
 	// Get our list of neighbours
 	std::vector<int> const* neighbours = t_graph->getNeighbours();
+	int const* pathCost = t_graph->getCost();
 
 	// Reset our data
 	std::fill_n(m_distance, ROWS * COLS, std::numeric_limits<float>::max());
@@ -52,7 +49,7 @@ Pathfinder::Path Pathfinder::findPath(Point t_origin, Point t_destination, Graph
 	std::fill_n(m_previous, ROWS * COLS, -1);
 
 	for (int i = 0; i < (ROWS * COLS); ++i)
-		m_heuristic[i] = t_graph->distanceBetweenPoints(i, goal);
+		m_heuristic[i] = t_graph->distanceBetweenIndices(i, goal);
 
 	std::priority_queue<int, std::vector<int>, decltype(cmp)> pQ(cmp);
 
@@ -75,7 +72,7 @@ Pathfinder::Path Pathfinder::findPath(Point t_origin, Point t_destination, Graph
 				continue;
 
 			// If this is shorter than the previous best path
-			float value = m_distance[current] + m_cost[neighbour];
+			float value = m_distance[current] + pathCost[neighbour];
 			if (m_distance[neighbour] > value)
 			{
 				// Update the path cost to this shorter path
