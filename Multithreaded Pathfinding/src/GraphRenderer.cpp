@@ -57,3 +57,13 @@ void GraphRenderer::setColor(int t_index, sf::Color t_color)
 
 	m_vBuffer.update(vertices, 4, offset);
 }
+
+////////////////////////////////////////////////////////////
+
+void GraphRenderer::update()
+{
+	bool const* walls = m_graph->getWalls();
+
+	for (int i = 0; i < m_graph->ROWS * m_graph->COLS; ++i)
+		if (!walls[i]) setColor(i, sf::Color::Black);
+}

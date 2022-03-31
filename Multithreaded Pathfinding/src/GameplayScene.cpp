@@ -63,7 +63,8 @@ void GameplayScene::processEvents()
 					m_graphRenderer->setColor(m_player, sf::Color::Green);
 					break;
 				case sf::Mouse::Middle:
-					//m_graph->setWall(mouseClickToPoint(worldPos));
+					m_graph->setWall(mouseClickToIndex(worldPos));
+					m_graphRenderer->update();
 					break;
 				case sf::Mouse::Right:
 					m_npc = mouseClickToIndex(worldPos);

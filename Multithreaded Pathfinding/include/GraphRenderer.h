@@ -37,6 +37,8 @@ public:
 	/// <param name="t_color">sf::Color to set cell to</param>
 	void setColor(int t_index, sf::Color t_color);
 
+	void update();
+
 	void draw(sf::RenderWindow& t_window);
 
 private:

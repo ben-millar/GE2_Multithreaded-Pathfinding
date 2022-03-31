@@ -43,10 +43,12 @@ public:
 
 	std::vector<int> const* getNeighbours() const { return m_neighbours; };
 
+	bool const* getWalls() const { return m_isTraversible; }
+
 	/// <summary>
 	/// Sets or unsets a wall at the given point (DEFAULT: set)
 	/// </summary>
-	void setWall(Point t_point, bool t_set = true);
+	void setWall(int t_index, bool t_wall = true);
 
 	/// <summary>
 	/// 
