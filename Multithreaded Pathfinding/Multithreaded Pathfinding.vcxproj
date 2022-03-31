@@ -23,6 +23,7 @@
     <ClInclude Include="include\GameplayScene.h" />
     <ClInclude Include="include\Globals.h" />
     <ClInclude Include="include\Graph.h" />
+    <ClInclude Include="include\GraphRenderer.h" />
     <ClInclude Include="include\IBaseScene.h" />
     <ClInclude Include="include\MainMenuScene.h" />
     <ClInclude Include="include\Pathfinder.h" />
@@ -33,6 +34,7 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\GameplayScene.cpp" />
     <ClCompile Include="src\Graph.cpp" />
+    <ClCompile Include="src\GraphRenderer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainMenuScene.cpp" />
     <ClCompile Include="src\Pathfinder.cpp" />

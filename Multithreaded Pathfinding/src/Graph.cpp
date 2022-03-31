@@ -28,9 +28,9 @@ Graph::~Graph()
 
 void Graph::generateGraph()
 {
-	for (int row = 0; row < COLS; ++row)
-		for (int col = 0; col < ROWS; ++col)
-			neighbours(row, col, m_neighbours[pointToIndex({ col, row })]);
+	for (int row = 0; row < ROWS; ++row)
+		for (int col = 0; col < COLS; ++col)
+			neighbours(row, col, m_neighbours[pointToIndex({ row, col })]);
 }
 
 ////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ size_t Graph::mouseClickToIndex(sf::Vector2f t_position)
 	int row = t_position.y / ROWS;
 	int col = t_position.x / COLS;
 
-	return pointToIndex({ col, row });
+	return pointToIndex({ row, col });
 }
 
 ////////////////////////////////////////////////////////////
@@ -52,21 +52,28 @@ void Graph::setWall(Point t_point, bool t_set)
 	// Set our point to be either traversible or not
 	m_isTraversible[index] = t_set;
 
-	std::vector<int> v;
-	neighbours(t_point.row, t_point.col, v, true);
+	std::vector<int> all_neighbours;
+	neighbours(t_point.row, t_point.col, all_neighbours, true);
 
-	int _row, _col;
+	for (auto& n : all_neighbours)
+	{
+		std::vector<int>& v = m_neighbours[n];
 
-	if (t_set) // If we're setting this as a wall, remove from neighbour lists
-		v.erase(
-			std::remove_if(v.begin(), v.end(),
-				[&](int const& val) {
-					return val == index;
-				}),
-			v.end()
-		);
-	else // Otherwise, if we're removing a wall, add it to neighbour lists
-		v.push_back(pointToIndex(t_point));
+		if (t_set) // If we're setting this as a wall, remove from neighbour lists
+			v.erase(std::remove(v.begin(), v.end(), index), v.end());
+		else // Otherwise, if we're removing a wall, add it to neighbour lists
+			v.push_back(pointToIndex(t_point));
+	}
+
+	//system("cls");
+	//for (int row = 0; row < ROWS; ++row)
+	//{
+	//	for (int col = 0; col < COLS; ++col)
+	//	{
+	//		std::cout << m_neighbours[pointToIndex({ row, col })].size() << ", ";
+	//	}
+	//	std::cout << std::endl;
+	//}
 }
 
 ////////////////////////////////////////////////////////////
@@ -95,7 +102,9 @@ void Graph::neighbours(int t_row, int t_col, std::vector<int>& t_vec, bool t_all
 
 			if (_col < 0 || _col >= COLS) continue;
 			if (_row == t_row && _col == t_col) continue;
-			if (!t_all && !m_isTraversible[pointToIndex({ _row, _col })]) continue;
+
+			if (!t_all)
+				if (!m_isTraversible[pointToIndex({ _row, _col })]) continue;
 
 			t_vec.push_back(pointToIndex({ _row, _col }));
 		}

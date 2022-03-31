@@ -5,15 +5,8 @@ GameplayScene::GameplayScene()
 	DEBUG_INFO("Creating " << typeid(*this).name());
 
 	m_graph = new Graph(30, 30);
+	m_graphRenderer = new GraphRenderer({ 1080,1080 }, m_graph);
 	m_pathfinder = new Pathfinder(30, 30);
-
-	TextureManager* tm = TextureManager::getInstance();
-
-	m_background.setTexture(*tm->getTexture("30_grid"));
-	m_background.setPosition({ 460.f, 0.f });
-
-	m_player.setTexture(*tm->getTexture("30_player"));
-	m_player.setPosition({ -100.f,-100.f });
 }
 
 ////////////////////////////////////////////////////////////
@@ -23,6 +16,7 @@ GameplayScene::~GameplayScene()
 	DEBUG_INFO("Destroying " << typeid(*this).name());
 
 	delete m_graph;
+	delete m_graphRenderer;
 	delete m_pathfinder;
 }
 
@@ -60,18 +54,20 @@ void GameplayScene::processEvents()
 			sf::Vector2i pixelPos = sf::Mouse::getPosition(*m_window);
 			sf::Vector2f worldPos = m_window->mapPixelToCoords(pixelPos);
 
-			if (m_background.getGlobalBounds().contains(worldPos))
+			if (m_screenBounds.contains(worldPos))
 			{
 				switch (e.mouseButton.button)
 				{
 				case sf::Mouse::Left:
-					placeNPC(worldPos);
+					m_player = mouseClickToIndex(worldPos);
+					m_graphRenderer->setColor(m_player, sf::Color::Green);
 					break;
 				case sf::Mouse::Middle:
-					m_graph->setWall(mouseClickToPoint(worldPos));
+					//m_graph->setWall(mouseClickToPoint(worldPos));
 					break;
 				case sf::Mouse::Right:
-					placePlayer(worldPos);
+					m_npc = mouseClickToIndex(worldPos);
+					m_graphRenderer->setColor(m_npc, sf::Color::Red);
 					break;
 				default:
 					break;
@@ -112,30 +108,16 @@ void GameplayScene::update(sf::Time t_dT)
 
 void GameplayScene::findPath()
 {
-	static const sf::Vector2f BOARD_OFFSET = { 460.f, 0.f };
-
-	sf::Vector2f playerPos = m_player.getPosition() - BOARD_OFFSET;
-	sf::Vector2f npcPos = m_NPCs.at(0).getPosition() - BOARD_OFFSET;
-	
-	Point player = {
-		(int)(playerPos.y / CELL_WIDTH),
-		(int)(playerPos.x / CELL_HEIGHT)
-	};
-
-	Point npc = {
-		(int)(npcPos.y / CELL_WIDTH),
-		(int)(npcPos.x / CELL_HEIGHT)
-	};
-
-	Pathfinder::Path path = m_pathfinder->findPath(npc, player, m_graph);
+	Pathfinder::Path path = m_pathfinder->findPath(m_npc, m_player, m_graph);
 
 	while (!path.empty())
 	{
 		int index = path.top();
 		path.pop();
+		m_graphRenderer->setColor(index, sf::Color::Yellow);
 
-		int row = index / COLS;
-		int col = index % COLS;
+		int row = index / m_graph->COLS;
+		int col = index % m_graph->ROWS;
 
 		DEBUG_INFO(row << ", " << col);
 	}
@@ -143,43 +125,12 @@ void GameplayScene::findPath()
 
 ////////////////////////////////////////////////////////////
 
-Point GameplayScene::mouseClickToPoint(sf::Vector2f t_mousePos)
+int GameplayScene::mouseClickToIndex(sf::Vector2f t_mousePos)
 {
-	sf::Vector2f localPos = t_mousePos - BOARD_OFFSET;
+	int row = t_mousePos.y / (m_screenBounds.width / m_graph->ROWS);
+	int col = t_mousePos.x / (m_screenBounds.height / m_graph->COLS);
 
-	int row = (int)(localPos.y / CELL_WIDTH);
-	int col = (int)(localPos.x / CELL_HEIGHT);
-
-	return Point(row, col);
-}
-
-////////////////////////////////////////////////////////////
-
-void GameplayScene::placePlayer(sf::Vector2f t_position)
-{
-	Point p = mouseClickToPoint(t_position);
-
-	sf::Vector2f pos = { (float)(p.col * CELL_WIDTH), (float)(p.row * CELL_HEIGHT) };
-	pos += BOARD_OFFSET;
-
-	m_player.setPosition(pos);
-}
-
-////////////////////////////////////////////////////////////
-
-void GameplayScene::placeNPC(sf::Vector2f t_position)
-{
-	static sf::Texture* tx = TextureManager::getInstance()->getTexture("30_npc");
-	sf::Sprite spr;
-	spr.setTexture(*tx);
-
-	Point p = mouseClickToPoint(t_position);
-
-	sf::Vector2f pos = { (float)(p.col * CELL_WIDTH), (float)(p.row * CELL_HEIGHT) };
-	pos += BOARD_OFFSET;
-
-	spr.setPosition(pos);
-	m_NPCs.push_back(spr);
+	return m_graph->pointToIndex({row, col});
 }
 
 ////////////////////////////////////////////////////////////
@@ -188,11 +139,7 @@ void GameplayScene::render()
 {
 	m_window->clear(sf::Color::Black);
 
-	m_window->draw(m_background);
-	m_window->draw(m_player);
-
-	for (auto& spr : m_NPCs)
-		m_window->draw(spr);
+	m_graphRenderer->draw(*m_window);
 
 	m_window->display();
 }

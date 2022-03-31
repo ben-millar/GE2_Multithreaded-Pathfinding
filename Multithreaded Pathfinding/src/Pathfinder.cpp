@@ -28,7 +28,7 @@ Pathfinder::~Pathfinder()
 
 ////////////////////////////////////////////////////////////
 
-Pathfinder::Path Pathfinder::findPath(Point t_origin, Point t_destination, Graph const* t_graph)
+Pathfinder::Path Pathfinder::findPath(int t_origin, int t_destination, Graph const* t_graph)
 {
 	auto cmp = [&](int i1, int i2) {
 		return (m_heuristic[i1] + m_distance[i1]) >
@@ -36,8 +36,8 @@ Pathfinder::Path Pathfinder::findPath(Point t_origin, Point t_destination, Graph
 	};
 
 	// Get the indices of our start and end points
-	size_t start = t_graph->pointToIndex({ t_origin.row, t_origin.col });
-	size_t goal = t_graph->pointToIndex({ t_destination.row, t_destination.col });
+	size_t start = t_origin;
+	size_t goal = t_destination;
 
 	// Get our list of neighbours
 	std::vector<int> const* neighbours = t_graph->getNeighbours();

@@ -4,9 +4,9 @@
 #include "IBaseScene.h"
 #include "Globals.h"
 #include "Graph.h"
+#include "GraphRenderer.h"
 #include "Pathfinder.h"
 #include "SceneManager.h"
-#include "TextureManager.h"
 
 class GameplayScene :
     public IBaseScene
@@ -28,13 +28,7 @@ public:
 
     void findPath();
 
-    Point mouseClickToPoint(sf::Vector2f t_mousePos);
-
-    void placePlayer(sf::Vector2f t_position);
-
-    void placeNPC(sf::Vector2f t_position);
-
-    void placeWall(sf::Vector2f t_position);
+    int mouseClickToIndex(sf::Vector2f t_mousePos);
 
     /// <summary>
     /// Draw the game to the render window
@@ -43,23 +37,14 @@ public:
 
 private:
 
-    const sf::Vector2f BOARD_OFFSET = { 460.f, 0.f };
-
-    const int ROWS = 30;
-    const int COLS = 30;
-
-    const sf::Vector2i GRID_DIMENSIONS = { 1000, 1000 };
-    const float CELL_WIDTH = GRID_DIMENSIONS.x / (float)COLS;
-    const float CELL_HEIGHT = GRID_DIMENSIONS.y / (float)ROWS;
-
     Graph* m_graph;
+    GraphRenderer* m_graphRenderer;
 
     Pathfinder* m_pathfinder;
 
-    sf::Sprite m_background;
+    sf::FloatRect m_screenBounds{ 0.f, 0.f, 1080.f, 1080.f };
 
-    sf::Sprite m_player;
-    std::vector<sf::Sprite> m_NPCs;
-    std::vector<sf::Sprite> m_walls;
+    int m_player;
+    int m_npc;
 };
 #endif

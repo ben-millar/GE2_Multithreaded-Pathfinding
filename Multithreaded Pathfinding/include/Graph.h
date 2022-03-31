@@ -69,6 +69,8 @@ public:
 	/// </summary>
 	Point indexToPoint(size_t t_index) const { return Point(t_index / COLS, t_index % COLS); }
 
+	const int ROWS, COLS;
+
 private:
 
 	/// <summary>
@@ -80,8 +82,6 @@ private:
 	/// <param name="t_all">If true, return all neighbours even if non-traversible.
 	/// If false, only return traversible neighbours.</param>
 	void neighbours(int t_row, int t_col, std::vector<int>& t_vec, bool t_all = false);
-
-	const int ROWS, COLS;
 
 	// Pre-bake the valid neighbours of each node
 	std::vector<int>* m_neighbours;

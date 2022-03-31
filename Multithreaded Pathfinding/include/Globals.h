@@ -5,7 +5,7 @@
 
 // 16:9 aspect ratio
 #define WINDOW_HEIGHT sf::VideoMode::getDesktopMode().height / 4 * 3
-#define WINDOW_WIDTH WINDOW_HEIGHT / 9 * 16
+#define WINDOW_WIDTH WINDOW_HEIGHT
 
 #ifdef _DEBUG
 #define DEBUG_INFO(msg) std::cout << msg << "\n"
