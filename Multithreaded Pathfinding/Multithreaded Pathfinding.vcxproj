@@ -29,6 +29,7 @@
     <ClInclude Include="include\Pathfinder.h" />
     <ClInclude Include="include\SceneManager.h" />
     <ClInclude Include="include\TextureManager.h" />
+    <ClInclude Include="include\thread_pool.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Game.cpp" />

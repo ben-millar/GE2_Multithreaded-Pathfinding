@@ -4,6 +4,9 @@ GameplayScene::GameplayScene()
 {
 	DEBUG_INFO("Creating " << typeid(*this).name());
 
+	// Leave one thread available for the main thread
+	m_threadPool = new thread_pool(std::thread::hardware_concurrency() - 1);
+
 	m_graph = new Graph(30, 30);
 	m_graphRenderer = new GraphRenderer({ 1080,1080 }, m_graph);
 	m_pathfinder = new Pathfinder(30, 30);
@@ -109,20 +112,49 @@ void GameplayScene::update(sf::Time t_dT)
 
 ////////////////////////////////////////////////////////////
 
+auto GameplayScene::wrap(
+	Pathfinder* t_instance,
+	Pathfinder::Path(Pathfinder::* t_func)(int, int, Graph const*),
+	int a, int b, Graph const* g) ->
+	std::function<Pathfinder::Path()>
+{
+	return [t_instance, t_func, a, b, g]() {
+		return (t_instance->*t_func)(a, b, g);
+	};
+}
+
+////////////////////////////////////////////////////////////
+
 void GameplayScene::findPath()
 {
+	static const int NUM_THREADS = m_threadPool->get_thread_count();
+	Pathfinder** pathfinders = new Pathfinder* [NUM_THREADS];
+
+	for (int i = 0; i < NUM_THREADS; ++i)
+		pathfinders[i] = new Pathfinder(30, 30);
+
+	int nextAvailable = 0;
+
+	std::vector<std::future<Pathfinder::Path>> results;
+	results.reserve(m_NPCs.size());
+
 	for (int const& npc : m_NPCs)
 	{
-		Pathfinder::Path path = m_pathfinder->findPath(npc, m_player, m_graph);
+		auto func = wrap(pathfinders[nextAvailable++ % NUM_THREADS], &Pathfinder::findPath, npc, m_player, m_graph);
+		results.push_back(m_threadPool->submit(func));
+	}
+
+	m_threadPool->wait_for_tasks();
+
+	for (auto& result : results)
+	{
+		Pathfinder::Path path = result.get();
 
 		while (!path.empty())
 		{
 			int index = path.top();
 			path.pop();
 			m_graphRenderer->setColor(index, sf::Color::Yellow);
-
-			int row = index / m_graph->COLS;
-			int col = index % m_graph->ROWS;
 		}
 	}
 }

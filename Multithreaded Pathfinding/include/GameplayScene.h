@@ -7,6 +7,7 @@
 #include "GraphRenderer.h"
 #include "Pathfinder.h"
 #include "SceneManager.h"
+#include "thread_pool.hpp"
 
 class GameplayScene :
     public IBaseScene
@@ -26,6 +27,18 @@ public:
     /// <param name="t_dTime">Time in seconds since the last update</param>
     virtual void update(sf::Time t_dT) override;
 
+    /// <summary>
+    /// Wrap our member function call as an invokeable functor for passing into our threadpool
+    /// </summary>
+    /// <param name="t_instance"></param>
+    /// <param name="t_func"></param>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <param name="g"></param>
+    /// <returns></returns>
+    auto wrap(Pathfinder* t_instance, Pathfinder::Path(Pathfinder::* t_func)(int, int, Graph const*), int a, int b, Graph const* g) ->
+        std::function<Pathfinder::Path()>;
+
     void findPath();
 
     int mouseClickToIndex(sf::Vector2f t_mousePos);
@@ -36,6 +49,14 @@ public:
     virtual void render() override;
 
 private:
+
+    //template <typename F, typename... Args>
+    //auto startTask(F&& f, Args&&... args)
+    //{
+    //    return m_threadPool->submit((std::forward<F>(f), std::forward<Args>(args)...));
+    //}
+
+    thread_pool* m_threadPool;
 
     Graph* m_graph;
     GraphRenderer* m_graphRenderer;
