@@ -48,13 +48,21 @@ public:
 	/// <summary>
 	/// Sets or unsets a wall at the given point (DEFAULT: set)
 	/// </summary>
-	void setWall(int t_index, bool t_wall = true);
+	void toggleWall(int t_index);
 
 	/// <summary>
-	/// 
+	/// Get a pointer to the c-style cost array (mutable)
 	/// </summary>
-	/// <returns></returns>
-	int const* getCost() const { return m_cost; }
+	/// <returns>Pointer to the first index in the cost array</returns>
+	int* getCost() const { return m_cost; }
+
+	/// <summary>
+	/// Returns whether a given index is traversible.
+	/// NO bounds checking.
+	/// </summary>
+	/// <param name="t_index">Index of cell to check</param>
+	/// <returns>True is cell is traversible, false otherwise</returns>
+	bool isTraversible(int t_index) const { return m_isTraversible[t_index]; }
 
 	/// <summary>
 	/// 

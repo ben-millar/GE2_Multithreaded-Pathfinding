@@ -9,11 +9,6 @@ void GraphRenderer::draw(sf::RenderWindow& t_window)
 
 void GraphRenderer::initializeGrid()
 {
-	static sf::Color colors[2] = {
-		sf::Color::White,
-		sf::Color(191,191,191,255)
-	};
-
 	// Create our buffer with 4 vertices per cell
 	m_vBuffer.create(4 + (m_graph->ROWS * m_graph->COLS * 4));
 	sf::Vertex vertices[4];
@@ -25,7 +20,7 @@ void GraphRenderer::initializeGrid()
 		for (int col = 0; col < m_graph->COLS; ++col)
 		{
 			sf::Vector2f position{ m_cellSize.x * col, m_cellSize.y * row };
-			createCell(position, colors[(row+col)%2], vertices);
+			createCell(position, m_backgroundColors[(row+col)%2], vertices);
 			m_vBuffer.update(vertices, 4, offset+=4);
 		}
 	}
@@ -51,6 +46,9 @@ void GraphRenderer::setColor(int t_index, sf::Color t_color)
 	int col = t_index % m_graph->ROWS;
 	int offset = 4 + (t_index * 4);
 
+	if (sf::Color::Transparent == t_color)
+		t_color = m_backgroundColors[(row + col) % 2];
+
 	sf::Vector2f position{ m_cellSize.x * col, m_cellSize.y * row };
 
 	createCell(position, t_color, vertices);
@@ -60,10 +58,38 @@ void GraphRenderer::setColor(int t_index, sf::Color t_color)
 
 ////////////////////////////////////////////////////////////
 
-void GraphRenderer::update()
+void GraphRenderer::toggleWall(int t_index)
 {
-	bool const* walls = m_graph->getWalls();
+	if (m_walls.count(t_index))
+	{
+		m_walls.erase(t_index);
+		setColor(t_index);
+	}
+	else
+	{
+		m_walls.insert(t_index);
+		setColor(t_index, sf::Color::Black);
+	}
+}
 
-	for (int i = 0; i < m_graph->ROWS * m_graph->COLS; ++i)
-		if (!walls[i]) setColor(i, sf::Color::Black);
+////////////////////////////////////////////////////////////
+
+void GraphRenderer::updateNPCs(std::vector<int>* t_vec)
+{
+	for (int const& index : m_NPCpositions)
+		setColor(index);
+
+	std::copy(t_vec->begin(), t_vec->end(), std::back_inserter(m_NPCpositions));
+
+	for (int const& index : m_NPCpositions)
+		setColor(index, sf::Color::Red);
+}
+
+////////////////////////////////////////////////////////////
+
+void GraphRenderer::setPlayerIndex(int t_index)
+{
+	setColor(m_playerPos);
+	m_playerPos = t_index;
+	setColor(m_playerPos, sf::Color::Green);
 }

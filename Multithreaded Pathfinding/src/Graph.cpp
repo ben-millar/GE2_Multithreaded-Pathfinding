@@ -45,10 +45,10 @@ size_t Graph::mouseClickToIndex(sf::Vector2f t_position)
 
 ////////////////////////////////////////////////////////////
 
-void Graph::setWall(int t_index, bool t_set)
+void Graph::toggleWall(int t_index)
 {
 	// Set our point to be either traversible or not
-	m_isTraversible[t_index] = !t_set;
+	m_isTraversible[t_index] = !m_isTraversible[t_index];
 	Point p = indexToPoint(t_index);
 
 	std::vector<int> all_neighbours;
@@ -58,10 +58,10 @@ void Graph::setWall(int t_index, bool t_set)
 	{
 		std::vector<int>& v = m_neighbours[n];
 
-		if (t_set) // If we're setting this as a wall, remove from neighbour lists
-			v.erase(std::remove(v.begin(), v.end(), t_index), v.end());
-		else // Otherwise, if we're removing a wall, add it to neighbour lists
+		if (m_isTraversible[t_index]) // If we're removing a wall, add it to neighbour lists
 			v.push_back(t_index);
+		else // Otherwise, if we're setting this as a wall, remove from neighbour lists
+			v.erase(std::remove(v.begin(), v.end(), t_index), v.end());
 	}
 }
 

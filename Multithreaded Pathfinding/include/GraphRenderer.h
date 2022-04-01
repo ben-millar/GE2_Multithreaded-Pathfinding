@@ -1,6 +1,9 @@
 #ifndef GRAPH_RENDERER_H
 #define GRAPH_RENDERER_H
 
+#include <algorithm>
+#include <unordered_set>
+
 #include <SFML/Graphics.hpp>
 
 #include "Graph.h"
@@ -35,9 +38,13 @@ public:
 	/// </summary>
 	/// <param name="t_index">Index of the cell to set the colour for</param>
 	/// <param name="t_color">sf::Color to set cell to</param>
-	void setColor(int t_index, sf::Color t_color);
+	void setColor(int t_index, sf::Color t_color = sf::Color::Transparent);
 
-	void update();
+	void toggleWall(int t_index);
+
+	void updateNPCs(std::vector<int>* t_vec);
+
+	void setPlayerIndex(int t_index);
 
 	void draw(sf::RenderWindow& t_window);
 
@@ -61,7 +68,16 @@ private:
 	// The size of our graph on-screen in pixels
 	sf::Vector2f m_size;
 
+	sf::Color m_backgroundColors[2] = {
+		sf::Color::White,
+		sf::Color(191,191,191,255)
+	};
+
 	sf::VertexBuffer m_vBuffer{ sf::Quads, sf::VertexBuffer::Usage::Dynamic };
+
+	std::unordered_set<int> m_walls;
+	std::vector<int> m_NPCpositions;
+	int m_playerPos;
 };
 
 #endif

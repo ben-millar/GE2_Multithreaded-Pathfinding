@@ -36,14 +36,12 @@ void GameplayScene::processEvents()
 			switch (e.key.code)
 			{
 			case sf::Keyboard::Escape:
-				m_window->close();
+				SceneManager::getInstance()->setScene(SceneType::MAIN_MENU);
+				return;
 				break;
-			case sf::Keyboard::P:
+			case sf::Keyboard::Space:
 				findPath();
 				break;
-			//case sf::Keyboard::Space:
-			//	SceneManager::getInstance()->setScene(SceneType::MAIN_MENU);
-			//	return;
 			default:
 				break;
 			}
@@ -56,19 +54,21 @@ void GameplayScene::processEvents()
 
 			if (m_screenBounds.contains(worldPos))
 			{
+				int index = mouseClickToIndex(worldPos);
+
 				switch (e.mouseButton.button)
 				{
 				case sf::Mouse::Left:
-					m_player = mouseClickToIndex(worldPos);
-					m_graphRenderer->setColor(m_player, sf::Color::Green);
+					m_player = index;
+					m_graphRenderer->setPlayerIndex(m_player);
 					break;
 				case sf::Mouse::Middle:
-					m_graph->setWall(mouseClickToIndex(worldPos));
-					m_graphRenderer->update();
+					m_graph->toggleWall(index);
+					m_graphRenderer->toggleWall(index);
 					break;
 				case sf::Mouse::Right:
-					m_npc = mouseClickToIndex(worldPos);
-					m_graphRenderer->setColor(m_npc, sf::Color::Red);
+					m_NPCs.push_back(index);
+					m_graphRenderer->updateNPCs(&m_NPCs);
 					break;
 				default:
 					break;
@@ -78,11 +78,13 @@ void GameplayScene::processEvents()
 
 		if (e.type == sf::Event::MouseWheelMoved)
 		{	
-			//sf::View v = m_window->getView();
+			sf::View v = m_window->getView();
+			v.zoom(1 - e.mouseWheel.delta * 0.05f);
 
-			//v.zoom(1 - e.mouseWheel.delta * 0.05f);
+			if (v.getSize().x > m_screenBounds.width)
+				v.setSize({ m_screenBounds.width, m_screenBounds.height });
 
-			//m_window->setView(v);
+			m_window->setView(v);
 		}
 
 		if (e.type == sf::Event::MouseMoved)
@@ -109,18 +111,19 @@ void GameplayScene::update(sf::Time t_dT)
 
 void GameplayScene::findPath()
 {
-	Pathfinder::Path path = m_pathfinder->findPath(m_npc, m_player, m_graph);
-
-	while (!path.empty())
+	for (int const& npc : m_NPCs)
 	{
-		int index = path.top();
-		path.pop();
-		m_graphRenderer->setColor(index, sf::Color::Yellow);
+		Pathfinder::Path path = m_pathfinder->findPath(npc, m_player, m_graph);
 
-		int row = index / m_graph->COLS;
-		int col = index % m_graph->ROWS;
+		while (!path.empty())
+		{
+			int index = path.top();
+			path.pop();
+			m_graphRenderer->setColor(index, sf::Color::Yellow);
 
-		DEBUG_INFO(row << ", " << col);
+			int row = index / m_graph->COLS;
+			int col = index % m_graph->ROWS;
+		}
 	}
 }
 

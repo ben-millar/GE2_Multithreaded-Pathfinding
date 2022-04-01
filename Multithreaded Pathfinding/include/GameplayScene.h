@@ -44,7 +44,8 @@ private:
 
     sf::FloatRect m_screenBounds{ 0.f, 0.f, 1080.f, 1080.f };
 
-    int m_player;
-    int m_npc;
+    int m_player{ 0 };
+
+    std::vector<int> m_NPCs;
 };
 #endif
