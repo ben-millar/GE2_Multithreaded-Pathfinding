@@ -1,6 +1,8 @@
 #ifndef GAMEPLAY_SCENE_H
 #define GAMEPLAY_SCENE_H
 
+#include <chrono>
+
 #include "IBaseScene.h"
 #include "Globals.h"
 #include "Graph.h"
@@ -8,6 +10,11 @@
 #include "Pathfinder.h"
 #include "SceneManager.h"
 #include "thread_pool.hpp"
+
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::milliseconds;
 
 class GameplayScene :
     public IBaseScene

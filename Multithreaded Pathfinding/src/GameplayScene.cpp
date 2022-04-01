@@ -7,9 +7,9 @@ GameplayScene::GameplayScene()
 	// Leave one thread available for the main thread
 	m_threadPool = new thread_pool(std::thread::hardware_concurrency() - 1);
 
-	m_graph = new Graph(30, 30);
+	m_graph = new Graph(1000, 1000);
 	m_graphRenderer = new GraphRenderer({ 1080,1080 }, m_graph);
-	m_pathfinder = new Pathfinder(30, 30);
+	m_pathfinder = new Pathfinder(1000, 1000);
 }
 
 ////////////////////////////////////////////////////////////
@@ -127,16 +127,41 @@ auto GameplayScene::wrap(
 
 void GameplayScene::findPath()
 {
+	/// <summary>
+	/// Single-thread benchmark
+	/// </summary>
+	auto t1 = high_resolution_clock::now();
+
+	for (int const& npc : m_NPCs)
+	{
+		Pathfinder::Path path = m_pathfinder->findPath(npc, m_player, m_graph);
+
+		while (!path.empty())
+		{
+			int index = path.top();
+			path.pop();
+			m_graphRenderer->setColor(index, sf::Color::Yellow);
+		}
+	}
+
+	auto t2 = high_resolution_clock::now();
+	std::cout << "Single thread: " << duration_cast<milliseconds>(t2 - t1).count() << std::endl;
+	/// <summary>
+	/// Multithreading benchmark
+	/// </summary>
+
 	static const int NUM_THREADS = m_threadPool->get_thread_count();
-	Pathfinder** pathfinders = new Pathfinder* [NUM_THREADS];
+	static Pathfinder** pathfinders = new Pathfinder* [NUM_THREADS];
 
 	for (int i = 0; i < NUM_THREADS; ++i)
-		pathfinders[i] = new Pathfinder(30, 30);
+		pathfinders[i] = new Pathfinder(1000, 1000);
 
 	int nextAvailable = 0;
 
 	std::vector<std::future<Pathfinder::Path>> results;
 	results.reserve(m_NPCs.size());
+
+	auto t3 = high_resolution_clock::now();
 
 	for (int const& npc : m_NPCs)
 	{
@@ -157,6 +182,9 @@ void GameplayScene::findPath()
 			m_graphRenderer->setColor(index, sf::Color::Yellow);
 		}
 	}
+
+	auto t4 = high_resolution_clock::now();
+	std::cout << "Multithreaded: " << duration_cast<milliseconds>(t4 - t3).count() << std::endl;
 }
 
 ////////////////////////////////////////////////////////////
