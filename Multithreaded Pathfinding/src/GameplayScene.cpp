@@ -112,19 +112,6 @@ void GameplayScene::update(sf::Time t_dT)
 
 ////////////////////////////////////////////////////////////
 
-auto GameplayScene::wrap(
-	Pathfinder* t_instance,
-	Pathfinder::Path(Pathfinder::* t_func)(int, int, Graph const*),
-	int a, int b, Graph const* g) ->
-	std::function<Pathfinder::Path()>
-{
-	return [t_instance, t_func, a, b, g]() {
-		return (t_instance->*t_func)(a, b, g);
-	};
-}
-
-////////////////////////////////////////////////////////////
-
 void GameplayScene::findPath()
 {
 	/// <summary>
@@ -165,8 +152,10 @@ void GameplayScene::findPath()
 
 	for (int const& npc : m_NPCs)
 	{
-		auto func = wrap(pathfinders[nextAvailable++ % NUM_THREADS], &Pathfinder::findPath, npc, m_player, m_graph);
-		results.push_back(m_threadPool->submit(func));
+		results.push_back(m_threadPool->submit([&]() {
+			return pathfinders[nextAvailable++ % NUM_THREADS]->findPath(npc, m_player, m_graph);
+			}
+		));
 	}
 
 	m_threadPool->wait_for_tasks();
