@@ -14,7 +14,7 @@ public:
 	Pathfinder(int t_rows, int t_cols);
 	~Pathfinder();
 
-	Path findPath(int t_origin, int t_destination, Graph const* t_graph);
+	Path findPath(int t_origin, int t_destination, Graph* t_graph);
 
 private:
 

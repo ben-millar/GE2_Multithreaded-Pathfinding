@@ -50,7 +50,7 @@ private:
     Graph* m_graph;
     GraphRenderer* m_graphRenderer;
 
-    Pathfinder* m_pathfinder;
+    Pathfinder** m_pathfinders;
 
     sf::FloatRect m_screenBounds{ 0.f, 0.f, 1080.f, 1080.f };
 

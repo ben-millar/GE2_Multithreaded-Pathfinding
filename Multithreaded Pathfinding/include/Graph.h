@@ -54,7 +54,12 @@ public:
 	/// Get a pointer to the c-style cost array (mutable)
 	/// </summary>
 	/// <returns>Pointer to the first index in the cost array</returns>
-	int* getCost() const { return m_cost; }
+	int* getCost() { return m_cost; }
+
+	/// <summary>
+	/// Reset our path costs between pathing batches
+	/// </summary>
+	void resetCosts() { std::fill_n(m_cost, ROWS * COLS, 1); }
 
 	/// <summary>
 	/// Returns whether a given index is traversible.

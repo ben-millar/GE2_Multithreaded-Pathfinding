@@ -7,7 +7,7 @@ Graph::Graph(int t_rows, int t_cols) :
 	m_neighbours = new std::vector<int>[ROWS * COLS];
 
 	m_cost = new int[ROWS * COLS];
-	std::fill_n(m_cost, ROWS * COLS, 0);
+	std::fill_n(m_cost, ROWS * COLS, 1);
 
 	m_isTraversible = new bool[ROWS * COLS];
 	std::fill_n(m_isTraversible, ROWS * COLS, true);

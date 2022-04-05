@@ -28,7 +28,7 @@ Pathfinder::~Pathfinder()
 
 ////////////////////////////////////////////////////////////
 
-Pathfinder::Path Pathfinder::findPath(int t_origin, int t_destination, Graph const* t_graph)
+Pathfinder::Path Pathfinder::findPath(int t_origin, int t_destination, Graph* t_graph)
 {
 	auto cmp = [&](int i1, int i2) {
 		return (m_heuristic[i1] + m_distance[i1]) >
@@ -41,7 +41,7 @@ Pathfinder::Path Pathfinder::findPath(int t_origin, int t_destination, Graph con
 
 	// Get our list of neighbours
 	std::vector<int> const* neighbours = t_graph->getNeighbours();
-	int const* pathCost = t_graph->getCost();
+	int* pathCost = t_graph->getCost();
 
 	// Reset our data
 	std::fill_n(m_distance, ROWS * COLS, std::numeric_limits<float>::max());
@@ -73,10 +73,11 @@ Pathfinder::Path Pathfinder::findPath(int t_origin, int t_destination, Graph con
 
 			// If this is shorter than the previous best path
 			float value = m_distance[current] + pathCost[neighbour];
+
 			if (m_distance[neighbour] > value)
 			{
 				// Update the path cost to this shorter path
-				m_distance[neighbour] = m_distance[current];
+				m_distance[neighbour] = value;
 				m_previous[neighbour] = current;
 			}
 
@@ -92,7 +93,10 @@ Pathfinder::Path Pathfinder::findPath(int t_origin, int t_destination, Graph con
 
 	std::stack<int> st;
 	for (int n = goal; -1 != n && n != start; n = m_previous[n])
+	{
+		pathCost[n] <<= 1;
 		st.push(n);
+	}
 
 	return st;
 }

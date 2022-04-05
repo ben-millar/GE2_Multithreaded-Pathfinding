@@ -7,9 +7,14 @@ GameplayScene::GameplayScene()
 	// Leave one thread available for the main thread
 	m_threadPool = new thread_pool(std::thread::hardware_concurrency() - 1);
 
-	m_graph = new Graph(1000, 1000);
+	m_graph = new Graph(30, 30);
 	m_graphRenderer = new GraphRenderer({ 1080,1080 }, m_graph);
-	m_pathfinder = new Pathfinder(1000, 1000);
+
+	const int NUM_THREADS = m_threadPool->get_thread_count();
+	m_pathfinders = new Pathfinder * [NUM_THREADS];
+
+	for (int i = 0; i < NUM_THREADS; ++i)
+		m_pathfinders[i] = new Pathfinder(30, 30);
 }
 
 ////////////////////////////////////////////////////////////
@@ -20,7 +25,7 @@ GameplayScene::~GameplayScene()
 
 	delete m_graph;
 	delete m_graphRenderer;
-	delete m_pathfinder;
+	delete[] m_pathfinders;
 }
 
 ////////////////////////////////////////////////////////////
@@ -114,34 +119,31 @@ void GameplayScene::update(sf::Time t_dT)
 
 void GameplayScene::findPath()
 {
+	m_graph->resetCosts();
 	/// <summary>
 	/// Single-thread benchmark
 	/// </summary>
-	auto t1 = high_resolution_clock::now();
+	//auto t1 = high_resolution_clock::now();
 
-	for (int const& npc : m_NPCs)
-	{
-		Pathfinder::Path path = m_pathfinder->findPath(npc, m_player, m_graph);
+	//for (int const& npc : m_NPCs)
+	//{
+	//	Pathfinder::Path path = m_pathfinder->findPath(npc, m_player, m_graph);
 
-		while (!path.empty())
-		{
-			int index = path.top();
-			path.pop();
-			m_graphRenderer->setColor(index, sf::Color::Yellow);
-		}
-	}
+	//	while (!path.empty())
+	//	{
+	//		int index = path.top();
+	//		path.pop();
+	//		m_graphRenderer->setColor(index, sf::Color::Yellow);
+	//	}
+	//}
 
-	auto t2 = high_resolution_clock::now();
-	std::cout << "Single thread: " << duration_cast<milliseconds>(t2 - t1).count() << std::endl;
+	//auto t2 = high_resolution_clock::now();
+	//std::cout << "Single thread: " << duration_cast<milliseconds>(t2 - t1).count() << std::endl;
 	/// <summary>
 	/// Multithreading benchmark
 	/// </summary>
 
 	static const int NUM_THREADS = m_threadPool->get_thread_count();
-	static Pathfinder** pathfinders = new Pathfinder* [NUM_THREADS];
-
-	for (int i = 0; i < NUM_THREADS; ++i)
-		pathfinders[i] = new Pathfinder(1000, 1000);
 
 	int nextAvailable = 0;
 
@@ -153,7 +155,7 @@ void GameplayScene::findPath()
 	for (int const& npc : m_NPCs)
 	{
 		results.push_back(m_threadPool->submit([&]() {
-			return pathfinders[nextAvailable++ % NUM_THREADS]->findPath(npc, m_player, m_graph);
+			return m_pathfinders[nextAvailable++ % NUM_THREADS]->findPath(npc, m_player, m_graph);
 			}
 		));
 	}
