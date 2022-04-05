@@ -41,7 +41,7 @@ Pathfinder::Path Pathfinder::findPath(int t_origin, int t_destination, Graph* t_
 
 	// Get our list of neighbours
 	std::vector<int> const* neighbours = t_graph->getNeighbours();
-	int* pathCost = t_graph->getCost();
+	int const* pathCost = t_graph->getCost();
 
 	// Reset our data
 	std::fill_n(m_distance, ROWS * COLS, std::numeric_limits<float>::max());
@@ -94,7 +94,7 @@ Pathfinder::Path Pathfinder::findPath(int t_origin, int t_destination, Graph* t_
 	std::stack<int> st;
 	for (int n = goal; -1 != n && n != start; n = m_previous[n])
 	{
-		pathCost[n] <<= 1;
+		t_graph->increaseCost(n);
 		st.push(n);
 	}
 

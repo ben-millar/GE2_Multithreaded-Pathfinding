@@ -9,6 +9,8 @@ Graph::Graph(int t_rows, int t_cols) :
 	m_cost = new int[ROWS * COLS];
 	std::fill_n(m_cost, ROWS * COLS, 1);
 
+	m_costMutex = new std::mutex[ROWS * COLS];
+
 	m_isTraversible = new bool[ROWS * COLS];
 	std::fill_n(m_isTraversible, ROWS * COLS, true);
 
@@ -21,6 +23,7 @@ Graph::~Graph()
 {
 	delete[] m_neighbours;
 	delete[] m_cost;
+	delete[] m_costMutex;
 	delete[] m_isTraversible;
 }
 
@@ -63,6 +66,14 @@ void Graph::toggleWall(int t_index)
 		else // Otherwise, if we're setting this as a wall, remove from neighbour lists
 			v.erase(std::remove(v.begin(), v.end(), t_index), v.end());
 	}
+}
+
+////////////////////////////////////////////////////////////
+
+void Graph::increaseCost(int t_index)
+{
+	const std::scoped_lock lock(m_costMutex[t_index]);
+	m_cost[t_index] <<= 1;
 }
 
 ////////////////////////////////////////////////////////////

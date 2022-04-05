@@ -195,11 +195,12 @@ void GameplayScene::findPath()
 
 void GameplayScene::drawPath(Pathfinder::Path t_path)
 {
+	sf::Color color = sf::Color(rand() % 255, rand() % 255, rand() % 255);
 	while (!t_path.empty())
 	{
 		int index = t_path.top();
 		t_path.pop();
-		m_graphRenderer->setColor(index, sf::Color::Yellow);
+		m_graphRenderer->setColor(index, color);
 	}
 }
 

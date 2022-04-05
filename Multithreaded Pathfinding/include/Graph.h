@@ -5,6 +5,7 @@
 #include <bitset>
 #include <queue>
 #include <stack>
+#include <mutex>
 #include <vector>
 
 #include <SFML/System/Vector2.hpp>
@@ -54,7 +55,12 @@ public:
 	/// Get a pointer to the c-style cost array (mutable)
 	/// </summary>
 	/// <returns>Pointer to the first index in the cost array</returns>
-	int* getCost() { return m_cost; }
+	int const* getCost() { return m_cost; }
+
+	/// <summary>
+	/// Increase the cost of a given index
+	/// </summary>
+	void increaseCost(int t_index);
 
 	/// <summary>
 	/// Reset our path costs between pathing batches
@@ -103,6 +109,8 @@ private:
 
 	// Cost of pathing through this node
 	int* m_cost;
+
+	mutable std::mutex* m_costMutex;
 
 	// Is this node traversible
 	bool* m_isTraversible;
