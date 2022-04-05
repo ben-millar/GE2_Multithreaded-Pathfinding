@@ -15,6 +15,7 @@ using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 using std::chrono::duration;
 using std::chrono::milliseconds;
+using namespace std::chrono_literals;
 
 class GameplayScene :
     public IBaseScene
@@ -35,6 +36,8 @@ public:
     virtual void update(sf::Time t_dT) override;
 
     void findPath();
+
+    void drawPath(Pathfinder::Path t_path);
 
     int mouseClickToIndex(sf::Vector2f t_mousePos);
 

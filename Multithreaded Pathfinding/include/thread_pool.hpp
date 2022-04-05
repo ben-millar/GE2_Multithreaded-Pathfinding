@@ -15,7 +15,6 @@
 #define THREAD_POOL_VERSION "v2.0.0 (2021-08-14)"
 
 #include <atomic>      // std::atomic
-#include <chrono>      // std::chrono
 #include <cstdint>     // std::int_fast64_t, std::uint_fast32_t
 #include <functional>  // std::function
 #include <future>      // std::future, std::promise
@@ -109,58 +108,6 @@ public:
         return thread_count;
     }
 
-    /**
-     * @brief Parallelize a loop by splitting it into blocks, submitting each block separately to the thread pool, and waiting for all blocks to finish executing. The user supplies a loop function, which will be called once per block and should iterate over the block's range.
-     *
-     * @tparam T1 The type of the first index in the loop. Should be a signed or unsigned integer.
-     * @tparam T2 The type of the index after the last index in the loop. Should be a signed or unsigned integer. If T1 is not the same as T2, a common type will be automatically inferred.
-     * @tparam F The type of the function to loop through.
-     * @param first_index The first index in the loop.
-     * @param index_after_last The index after the last index in the loop. The loop will iterate from first_index to (index_after_last - 1) inclusive. In other words, it will be equivalent to "for (T i = first_index; i < index_after_last; i++)". Note that if first_index == index_after_last, the function will terminate without doing anything.
-     * @param loop The function to loop through. Will be called once per block. Should take exactly two arguments: the first index in the block and the index after the last index in the block. loop(start, end) should typically involve a loop of the form "for (T i = start; i < end; i++)".
-     * @param num_blocks The maximum number of blocks to split the loop into. The default is to use the number of threads in the pool.
-     */
-    template <typename T1, typename T2, typename F>
-    void parallelize_loop(const T1& first_index, const T2& index_after_last, const F& loop, ui32 num_blocks = 0)
-    {
-        typedef std::common_type_t<T1, T2> T;
-        T the_first_index = (T)first_index;
-        T last_index = (T)index_after_last;
-        if (the_first_index == last_index)
-            return;
-        if (last_index < the_first_index)
-        {
-            T temp = last_index;
-            last_index = the_first_index;
-            the_first_index = temp;
-        }
-        last_index--;
-        if (num_blocks == 0)
-            num_blocks = thread_count;
-        ui64 total_size = (ui64)(last_index - the_first_index + 1);
-        ui64 block_size = (ui64)(total_size / num_blocks);
-        if (block_size == 0)
-        {
-            block_size = 1;
-            num_blocks = (ui32)total_size > 1 ? (ui32)total_size : 1;
-        }
-        std::atomic<ui32> blocks_running = 0;
-        for (ui32 t = 0; t < num_blocks; t++)
-        {
-            T start = ((T)(t * block_size) + the_first_index);
-            T end = (t == num_blocks - 1) ? last_index + 1 : ((T)((t + 1) * block_size) + the_first_index);
-            blocks_running++;
-            push_task([start, end, &loop, &blocks_running]
-                {
-                    loop(start, end);
-                    blocks_running--;
-                });
-        }
-        while (blocks_running != 0)
-        {
-            sleep_or_yield();
-        }
-    }
 
     /**
      * @brief Push a function with no arguments or return value into the task queue.
@@ -432,113 +379,4 @@ private:
 };
 
 //                                     End class thread_pool                                     //
-// ============================================================================================= //
-
-// ============================================================================================= //
-//                                   Begin class synced_stream                                   //
-
-/**
- * @brief A helper class to synchronize printing to an output stream by different threads.
- */
-class synced_stream
-{
-public:
-    /**
-     * @brief Construct a new synced stream.
-     *
-     * @param _out_stream The output stream to print to. The default value is std::cout.
-     */
-    synced_stream(std::ostream& _out_stream = std::cout)
-        : out_stream(_out_stream) {};
-
-    /**
-     * @brief Print any number of items into the output stream. Ensures that no other threads print to this stream simultaneously, as long as they all exclusively use this synced_stream object to print.
-     *
-     * @tparam T The types of the items
-     * @param items The items to print.
-     */
-    template <typename... T>
-    void print(const T &...items)
-    {
-        const std::scoped_lock lock(stream_mutex);
-        (out_stream << ... << items);
-    }
-
-    /**
-     * @brief Print any number of items into the output stream, followed by a newline character. Ensures that no other threads print to this stream simultaneously, as long as they all exclusively use this synced_stream object to print.
-     *
-     * @tparam T The types of the items
-     * @param items The items to print.
-     */
-    template <typename... T>
-    void println(const T &...items)
-    {
-        print(items..., '\n');
-    }
-
-private:
-    /**
-     * @brief A mutex to synchronize printing.
-     */
-    mutable std::mutex stream_mutex = {};
-
-    /**
-     * @brief The output stream to print to.
-     */
-    std::ostream& out_stream;
-};
-
-//                                    End class synced_stream                                    //
-// ============================================================================================= //
-
-// ============================================================================================= //
-//                                       Begin class timer                                       //
-
-/**
- * @brief A helper class to measure execution time for benchmarking purposes.
- */
-class timer
-{
-    typedef std::int_fast64_t i64;
-
-public:
-    /**
-     * @brief Start (or restart) measuring time.
-     */
-    void start()
-    {
-        start_time = std::chrono::steady_clock::now();
-    }
-
-    /**
-     * @brief Stop measuring time and store the elapsed time since start().
-     */
-    void stop()
-    {
-        elapsed_time = std::chrono::steady_clock::now() - start_time;
-    }
-
-    /**
-     * @brief Get the number of milliseconds that have elapsed between start() and stop().
-     *
-     * @return The number of milliseconds.
-     */
-    i64 ms() const
-    {
-        return (std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_time)).count();
-    }
-
-private:
-    /**
-     * @brief The time point when measuring started.
-     */
-    std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
-
-    /**
-     * @brief The duration that has elapsed between start() and stop().
-     */
-    std::chrono::duration<double> elapsed_time = std::chrono::duration<double>::zero();
-};
-
-//                                        End class timer                                        //
 // ============================================================================================= //

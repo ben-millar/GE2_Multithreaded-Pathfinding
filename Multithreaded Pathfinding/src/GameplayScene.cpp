@@ -7,14 +7,23 @@ GameplayScene::GameplayScene()
 	// Leave one thread available for the main thread
 	m_threadPool = new thread_pool(std::thread::hardware_concurrency() - 1);
 
-	m_graph = new Graph(30, 30);
+	m_graph = new Graph(100, 100);
 	m_graphRenderer = new GraphRenderer({ 1080,1080 }, m_graph);
 
 	const int NUM_THREADS = m_threadPool->get_thread_count();
 	m_pathfinders = new Pathfinder * [NUM_THREADS];
 
 	for (int i = 0; i < NUM_THREADS; ++i)
-		m_pathfinders[i] = new Pathfinder(30, 30);
+		m_pathfinders[i] = new Pathfinder(100, 100);
+
+	for (int i = 0; i < 50; ++i)
+	{
+		int index = (rand() % 100) * (rand() % 100);
+		m_NPCs.push_back(index);
+		
+	}
+
+	m_graphRenderer->updateNPCs(&m_NPCs);
 }
 
 ////////////////////////////////////////////////////////////
@@ -160,22 +169,38 @@ void GameplayScene::findPath()
 		));
 	}
 
+	while (true)
+	{
+		std::this_thread::sleep_for(1000ms);
+		int remaining = m_threadPool->get_tasks_total();
+
+		std::cout.flush();
+		std::cout << "Paths complete: [" << 50-remaining << "/50]" << std::endl;
+
+		if (!remaining) break;
+	}
+
 	m_threadPool->wait_for_tasks();
 
 	for (auto& result : results)
 	{
-		Pathfinder::Path path = result.get();
-
-		while (!path.empty())
-		{
-			int index = path.top();
-			path.pop();
-			m_graphRenderer->setColor(index, sf::Color::Yellow);
-		}
+		drawPath(result.get());
 	}
 
 	auto t4 = high_resolution_clock::now();
 	std::cout << "Multithreaded: " << duration_cast<milliseconds>(t4 - t3).count() << std::endl;
+}
+
+////////////////////////////////////////////////////////////
+
+void GameplayScene::drawPath(Pathfinder::Path t_path)
+{
+	while (!t_path.empty())
+	{
+		int index = t_path.top();
+		t_path.pop();
+		m_graphRenderer->setColor(index, sf::Color::Yellow);
+	}
 }
 
 ////////////////////////////////////////////////////////////
