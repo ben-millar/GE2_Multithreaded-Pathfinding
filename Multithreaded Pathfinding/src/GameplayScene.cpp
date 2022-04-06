@@ -1,7 +1,7 @@
 #include "GameplayScene.h"
 
-GameplayScene::GameplayScene() :
-	GRID_SIZE(1000), NUM_NPCS(500)
+GameplayScene::GameplayScene(int t_gridSize, int t_numNPCs) :
+	GRID_SIZE(t_gridSize), NUM_NPCS(t_numNPCs)
 {
 	DEBUG_INFO("Creating " << typeid(*this).name());
 
@@ -151,10 +151,8 @@ void GameplayScene::findPath()
 		results.pop();
 	}
 
-	m_threadPool->waitForTasks();
-
 	auto t4 = high_resolution_clock::now();
-	std::cout << "Multithreaded: " << duration_cast<milliseconds>(t4 - t3).count() << std::endl;
+	DEBUG_INFO("Multithreaded: " << duration_cast<milliseconds>(t4 - t3).count());
 }
 
 ////////////////////////////////////////////////////////////

@@ -8,7 +8,7 @@
 #include "IBaseScene.h"
 #include "Globals.h"
 
-enum class SceneType { MAIN_MENU, GAMEPLAY };
+enum class SceneType { MAIN_MENU, GAMEPLAY_30, GAMEPLAY_100, GAMEPLAY_1000 };
 
 using Scene = std::unique_ptr<IBaseScene>;
 using SceneFactory = std::unordered_map<SceneType, std::function<Scene()>>;
@@ -28,11 +28,11 @@ public:
 
 	void setWindow(sf::RenderWindow* t_window) { m_window = t_window; }
 
-	template<typename T>
-	void registerScene(SceneType t_sceneType)
+	template<typename T, typename... A>
+	void registerScene(SceneType t_sceneType, const A& ...args)
 	{
-		m_sceneFactory.emplace(t_sceneType, []() {
-			return std::make_unique<T>();
+		m_sceneFactory.emplace(t_sceneType, [args...]() {
+			return std::make_unique<T>(args...);
 			});
 	}
 

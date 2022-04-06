@@ -11,10 +11,12 @@ void Game::run()
 	auto sceneManager = SceneManager::getInstance();
 	sceneManager->setWindow(m_window);
 
-	sceneManager->registerScene<GameplayScene>(SceneType::GAMEPLAY);
+	sceneManager->registerScene<GameplayScene>(SceneType::GAMEPLAY_30, 30, 5);
+	sceneManager->registerScene<GameplayScene>(SceneType::GAMEPLAY_100, 100, 50);
+	sceneManager->registerScene<GameplayScene>(SceneType::GAMEPLAY_1000, 1000, 500);
 	sceneManager->registerScene<MainMenuScene>(SceneType::MAIN_MENU);
 
-	sceneManager->setScene(SceneType::GAMEPLAY);
+	sceneManager->setScene(SceneType::MAIN_MENU);
 
 	sf::Clock clock;
 	sf::Time lag = sf::Time::Zero;

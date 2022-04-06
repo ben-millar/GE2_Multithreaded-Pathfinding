@@ -30,8 +30,14 @@ void MainMenuScene::processEvents()
 			case sf::Keyboard::Escape:
 				m_window->close();
 				break;
-			case sf::Keyboard::Space:
-				SceneManager::getInstance()->setScene(SceneType::GAMEPLAY);
+			case sf::Keyboard::Num1:
+				SceneManager::getInstance()->setScene(SceneType::GAMEPLAY_30);
+				return;
+			case sf::Keyboard::Num2:
+				SceneManager::getInstance()->setScene(SceneType::GAMEPLAY_100);
+				return;
+			case sf::Keyboard::Num3:
+				SceneManager::getInstance()->setScene(SceneType::GAMEPLAY_1000);
 				return;
 			default:
 				break;

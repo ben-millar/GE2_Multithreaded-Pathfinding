@@ -21,7 +21,7 @@ class GameplayScene :
     public IBaseScene
 {
 public:
-    GameplayScene();
+    GameplayScene(int t_gridSize, int t_numNPCs);
     ~GameplayScene();
 
     /// <summary>
