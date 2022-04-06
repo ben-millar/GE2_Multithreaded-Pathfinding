@@ -3,6 +3,7 @@
 MainMenuScene::MainMenuScene()
 {
 	DEBUG_INFO("Creating " << typeid(*this).name());
+	m_bgSprite.setTexture(*TextureManager::getInstance()->getTexture("background"));
 }
 
 ////////////////////////////////////////////////////////////
@@ -57,6 +58,8 @@ void MainMenuScene::update(sf::Time t_dT)
 void MainMenuScene::render()
 {
 	m_window->clear(sf::Color::Transparent);
+
+	m_window->draw(m_bgSprite);
 
 	m_window->display();
 }

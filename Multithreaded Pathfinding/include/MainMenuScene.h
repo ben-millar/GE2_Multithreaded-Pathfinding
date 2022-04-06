@@ -4,6 +4,7 @@
 #include "IBaseScene.h"
 #include "Globals.h"
 #include "SceneManager.h"
+#include "TextureManager.h"
 
 class MainMenuScene :
     public IBaseScene
@@ -30,6 +31,8 @@ public:
     virtual void render() override;
 
 private:
+
+    sf::Sprite m_bgSprite;
 
 };
 #endif

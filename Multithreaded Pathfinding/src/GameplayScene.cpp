@@ -32,6 +32,7 @@ GameplayScene::~GameplayScene()
 {
 	DEBUG_INFO("Destroying " << typeid(*this).name());
 
+	delete m_threadPool;
 	delete m_graph;
 	delete m_graphRenderer;
 	delete[] m_pathfinders;

@@ -45,6 +45,7 @@ void Game::run()
 void Game::loadTextures()
 {
 	TextureManager* tm = TextureManager::getInstance();
+	tm->loadTexture("background", "background.png");
 }
 
 ////////////////////////////////////////////////////////////
