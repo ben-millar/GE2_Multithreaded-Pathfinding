@@ -28,12 +28,17 @@ Pathfinder::~Pathfinder()
 
 ////////////////////////////////////////////////////////////
 
-Pathfinder::Path Pathfinder::findPath(int t_origin, int t_destination, Graph* t_graph)
+void Pathfinder::findPath(int t_origin, int t_destination, std::shared_ptr<Path> t_path, Graph* t_graph)
 {
+	const std::scoped_lock lock(m_mtx);
+
 	auto cmp = [&](int i1, int i2) {
 		return (m_heuristic[i1] + m_distance[i1]) >
 			(m_heuristic[i2] + m_distance[i2]);
 	};
+
+	if (t_path.get()->size() < 0)
+		std::cout << "AHHHHHHHHHHHHHHHHHHHH";
 
 	// Get the indices of our start and end points
 	size_t start = t_origin;
@@ -91,12 +96,9 @@ Pathfinder::Path Pathfinder::findPath(int t_origin, int t_destination, Graph* t_
 		}
 	}
 
-	std::stack<int> st;
 	for (int n = goal; -1 != n && n != start; n = m_previous[n])
 	{
 		t_graph->increaseCost(n);
-		st.push(n);
+		t_path->push(n);
 	}
-
-	return st;
 }

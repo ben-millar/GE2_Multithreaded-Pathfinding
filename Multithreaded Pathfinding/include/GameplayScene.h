@@ -9,7 +9,7 @@
 #include "GraphRenderer.h"
 #include "Pathfinder.h"
 #include "SceneManager.h"
-#include "thread_pool.hpp"
+#include "ThreadPool.hpp"
 
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
@@ -48,7 +48,7 @@ public:
 
 private:
 
-    thread_pool* m_threadPool;
+    ThreadPool* m_threadPool;
 
     Graph* m_graph;
     GraphRenderer* m_graphRenderer;

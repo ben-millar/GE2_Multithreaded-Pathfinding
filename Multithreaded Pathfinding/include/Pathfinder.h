@@ -14,9 +14,11 @@ public:
 	Pathfinder(int t_rows, int t_cols);
 	~Pathfinder();
 
-	Path findPath(int t_origin, int t_destination, Graph* t_graph);
+	void findPath(int t_origin, int t_destination, std::shared_ptr<Path> t_path, Graph* t_graph);
 
 private:
+
+	std::mutex m_mtx;
 
 	const int ROWS, COLS;
 

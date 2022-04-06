@@ -5,12 +5,10 @@
 #include <cstdint>     // std::int_fast64_t, std::uint_fast32_t
 #include <functional>  // std::function
 #include <future>      // std::future, std::promise
-#include <iostream>    // std::cout, std::ostream
 #include <memory>      // std::shared_ptr, std::unique_ptr
 #include <mutex>       // std::mutex, std::scoped_lock
 #include <queue>       // std::queue
 #include <thread>      // std::this_thread, std::thread
-#include <type_traits> // std::common_type_t, std::decay_t, std::enable_if_t, std::is_void_v, std::invoke_result_t
 #include <utility>     // std::move
 
 class ThreadPool
@@ -113,18 +111,18 @@ public:
 	/// <param name="t_task">Function to submit</param>
 	/// <param name="...args">Args to tie to the function call</param>
 	/// <returns>An std::future which will contain a bool marking when our task has complete</returns>
-	template <typename T, typename... A, typename = std::enable_if_t<std::is_void_v<std::invoke_result_t<std::decay_t<T>, std::decay_t<A>...>>>>
+	template <typename T, typename... A>
 	std::future<bool> submit(const T& t_task, const A& ...args)
 	{
 		std::shared_ptr<std::promise<bool>> promise(new std::promise<bool>);
 		std::future<bool> future = promise->get_future();
 
 		// Wrap our function call in error handling, and tie returns to promise
-		pushTask([task, args..., promise]
+		pushTask([t_task, args..., promise]
 		{
 			try
 			{
-				task(args...);
+				t_task(args...);
 				promise->set_value(true);
 			}
 			catch (...)

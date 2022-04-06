@@ -5,12 +5,12 @@ GameplayScene::GameplayScene()
 	DEBUG_INFO("Creating " << typeid(*this).name());
 
 	// Leave one thread available for the main thread
-	m_threadPool = new thread_pool(std::thread::hardware_concurrency() - 1);
+	m_threadPool = new ThreadPool(std::thread::hardware_concurrency() - 1);
 
 	m_graph = new Graph(100, 100);
 	m_graphRenderer = new GraphRenderer({ 1080,1080 }, m_graph);
 
-	const int NUM_THREADS = m_threadPool->get_thread_count();
+	const int NUM_THREADS = m_threadPool->getThreadCount();
 	m_pathfinders = new Pathfinder * [NUM_THREADS];
 
 	for (int i = 0; i < NUM_THREADS; ++i)
@@ -152,39 +152,43 @@ void GameplayScene::findPath()
 	/// Multithreading benchmark
 	/// </summary>
 
-	static const int NUM_THREADS = m_threadPool->get_thread_count();
+	static const int NUM_THREADS = m_threadPool->getThreadCount();
 
 	int nextAvailable = 0;
 
-	std::vector<std::future<Pathfinder::Path>> results;
+	std::vector<std::shared_ptr<Pathfinder::Path>> results;
+	std::vector<std::future<bool>> futures;
 	results.reserve(m_NPCs.size());
 
 	auto t3 = high_resolution_clock::now();
 
 	for (int const& npc : m_NPCs)
 	{
-		results.push_back(m_threadPool->submit([&]() {
-			return m_pathfinders[nextAvailable++ % NUM_THREADS]->findPath(npc, m_player, m_graph);
-			}
-		));
+		auto p = std::make_shared<Pathfinder::Path>();
+
+		futures.push_back(m_threadPool->submit([this, npc, p, nextAvailable]() {
+			m_pathfinders[nextAvailable % NUM_THREADS]->findPath(npc, m_player, p, m_graph);
+			}));
+
+		results.push_back(p);
+		nextAvailable++;
 	}
 
 	while (true)
 	{
 		std::this_thread::sleep_for(1000ms);
-		int remaining = m_threadPool->get_tasks_total();
+		int remaining = m_threadPool->getTotalTasks();
 
-		std::cout.flush();
 		std::cout << "Paths complete: [" << 50-remaining << "/50]" << std::endl;
 
 		if (!remaining) break;
 	}
 
-	m_threadPool->wait_for_tasks();
+	m_threadPool->waitForTasks();
 
 	for (auto& result : results)
 	{
-		drawPath(result.get());
+		drawPath(*result);
 	}
 
 	auto t4 = high_resolution_clock::now();
