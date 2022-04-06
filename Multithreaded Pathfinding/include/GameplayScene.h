@@ -37,7 +37,7 @@ public:
 
     void findPath();
 
-    void drawPath(Pathfinder::Path t_path);
+    void drawPath(std::shared_ptr<Pathfinder::Path> t_path);
 
     int mouseClickToIndex(sf::Vector2f t_mousePos);
 
@@ -47,6 +47,10 @@ public:
     virtual void render() override;
 
 private:
+    void scrollView(sf::Time t_dT);
+
+    const int GRID_SIZE;
+    const int NUM_NPCS;
 
     ThreadPool* m_threadPool;
 

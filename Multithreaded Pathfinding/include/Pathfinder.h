@@ -21,6 +21,9 @@ private:
 	std::mutex m_mtx;
 
 	const int ROWS, COLS;
+	const int MAX_STEPS;
+
+	const bool PREFER_ORGANIC{ false };
 
 	// Cost of pathing through this node
 	float* m_distance;

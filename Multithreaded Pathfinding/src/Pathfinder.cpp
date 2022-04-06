@@ -1,7 +1,7 @@
 #include "Pathfinder.h"
 
 Pathfinder::Pathfinder(int t_rows, int t_cols) :
-	ROWS{ t_rows }, COLS{ t_cols }
+	ROWS{ t_rows }, COLS{ t_cols }, MAX_STEPS{ 2 * ROWS }
 {
 	m_distance = new float[ROWS * COLS];
 	std::fill_n(m_distance, ROWS * COLS, 0.f);
@@ -37,9 +37,6 @@ void Pathfinder::findPath(int t_origin, int t_destination, std::shared_ptr<Path>
 			(m_heuristic[i2] + m_distance[i2]);
 	};
 
-	if (t_path.get()->size() < 0)
-		std::cout << "AHHHHHHHHHHHHHHHHHHHH";
-
 	// Get the indices of our start and end points
 	size_t start = t_origin;
 	size_t goal = t_destination;
@@ -72,6 +69,8 @@ void Pathfinder::findPath(int t_origin, int t_destination, std::shared_ptr<Path>
 		// Iterate through the arcs on the current node
 		for (auto neighbour : neighbours[current])
 		{
+			if (PREFER_ORGANIC && rand() % 2) continue;
+
 			// If we're not returning to the previous node
 			if (m_previous[neighbour] == current)
 				continue;
@@ -96,9 +95,14 @@ void Pathfinder::findPath(int t_origin, int t_destination, std::shared_ptr<Path>
 		}
 	}
 
-	for (int n = goal; -1 != n && n != start; n = m_previous[n])
+	int n = goal, count = 0;
+
+	while (n != start && n != -1 && count < MAX_STEPS)
 	{
 		t_graph->increaseCost(n);
 		t_path->push(n);
+
+		n = m_previous[n];
+		++count;
 	}
 }

@@ -1,26 +1,26 @@
 #include "GameplayScene.h"
 
-GameplayScene::GameplayScene()
+GameplayScene::GameplayScene() :
+	GRID_SIZE(1000), NUM_NPCS(500)
 {
 	DEBUG_INFO("Creating " << typeid(*this).name());
 
 	// Leave one thread available for the main thread
-	m_threadPool = new ThreadPool(std::thread::hardware_concurrency() - 1);
+	m_threadPool = new ThreadPool(7);
 
-	m_graph = new Graph(100, 100);
+	m_graph = new Graph(GRID_SIZE, GRID_SIZE);
 	m_graphRenderer = new GraphRenderer({ 1080,1080 }, m_graph);
 
 	const int NUM_THREADS = m_threadPool->getThreadCount();
 	m_pathfinders = new Pathfinder * [NUM_THREADS];
 
 	for (int i = 0; i < NUM_THREADS; ++i)
-		m_pathfinders[i] = new Pathfinder(100, 100);
+		m_pathfinders[i] = new Pathfinder(GRID_SIZE, GRID_SIZE);
 
-	for (int i = 0; i < 50; ++i)
+	for (int i = 0; i < NUM_NPCS; ++i)
 	{
-		int index = (rand() % 100) * (rand() % 100);
-		m_NPCs.push_back(index);
-		
+		int index = (rand() % GRID_SIZE) * (rand() % GRID_SIZE);
+		m_NPCs.push_back(index);	
 	}
 
 	m_graphRenderer->updateNPCs(&m_NPCs);
@@ -106,14 +106,7 @@ void GameplayScene::processEvents()
 
 		if (e.type == sf::Event::MouseMoved)
 		{
-			//sf::View v = m_window->getView();
-
-			//sf::Vector2i pixelPos = sf::Mouse::getPosition(*m_window);
-			//sf::Vector2f worldPos = m_window->mapPixelToCoords(pixelPos);
-
-			//v.setCenter(worldPos);
-
-			//m_window->setView(v);
+			
 		}
 	}
 }
@@ -122,6 +115,8 @@ void GameplayScene::processEvents()
 
 void GameplayScene::update(sf::Time t_dT)
 {
+	if (m_window->hasFocus())
+		scrollView(t_dT);
 }
 
 ////////////////////////////////////////////////////////////
@@ -129,36 +124,13 @@ void GameplayScene::update(sf::Time t_dT)
 void GameplayScene::findPath()
 {
 	m_graph->resetCosts();
-	/// <summary>
-	/// Single-thread benchmark
-	/// </summary>
-	//auto t1 = high_resolution_clock::now();
-
-	//for (int const& npc : m_NPCs)
-	//{
-	//	Pathfinder::Path path = m_pathfinder->findPath(npc, m_player, m_graph);
-
-	//	while (!path.empty())
-	//	{
-	//		int index = path.top();
-	//		path.pop();
-	//		m_graphRenderer->setColor(index, sf::Color::Yellow);
-	//	}
-	//}
-
-	//auto t2 = high_resolution_clock::now();
-	//std::cout << "Single thread: " << duration_cast<milliseconds>(t2 - t1).count() << std::endl;
-	/// <summary>
-	/// Multithreading benchmark
-	/// </summary>
 
 	static const int NUM_THREADS = m_threadPool->getThreadCount();
 
 	int nextAvailable = 0;
 
-	std::vector<std::shared_ptr<Pathfinder::Path>> results;
-	std::vector<std::future<bool>> futures;
-	results.reserve(m_NPCs.size());
+	std::queue<std::future<bool>> futures;
+	std::queue<std::shared_ptr<Pathfinder::Path>> results;
 
 	auto t3 = high_resolution_clock::now();
 
@@ -166,30 +138,25 @@ void GameplayScene::findPath()
 	{
 		auto p = std::make_shared<Pathfinder::Path>();
 
-		futures.push_back(m_threadPool->submit([this, npc, p, nextAvailable]() {
+		futures.push(m_threadPool->submit([this, npc, p, nextAvailable]() {
 			m_pathfinders[nextAvailable % NUM_THREADS]->findPath(npc, m_player, p, m_graph);
 			}));
 
-		results.push_back(p);
+		results.push(p);
+
 		nextAvailable++;
 	}
 
-	while (true)
+	while (!futures.empty() && !results.empty())
 	{
-		std::this_thread::sleep_for(1000ms);
-		int remaining = m_threadPool->getTotalTasks();
+		futures.front().wait();
+		futures.pop();
 
-		std::cout << "Paths complete: [" << 50-remaining << "/50]" << std::endl;
-
-		if (!remaining) break;
+		drawPath(results.front());
+		results.pop();
 	}
 
 	m_threadPool->waitForTasks();
-
-	for (auto& result : results)
-	{
-		drawPath(*result);
-	}
 
 	auto t4 = high_resolution_clock::now();
 	std::cout << "Multithreaded: " << duration_cast<milliseconds>(t4 - t3).count() << std::endl;
@@ -197,15 +164,17 @@ void GameplayScene::findPath()
 
 ////////////////////////////////////////////////////////////
 
-void GameplayScene::drawPath(Pathfinder::Path t_path)
+void GameplayScene::drawPath(std::shared_ptr<Pathfinder::Path> t_path)
 {
 	sf::Color color = sf::Color(rand() % 255, rand() % 255, rand() % 255);
-	while (!t_path.empty())
+	while (!t_path->empty())
 	{
-		int index = t_path.top();
-		t_path.pop();
+		int index = t_path->top();
+		t_path->pop();
 		m_graphRenderer->setColor(index, color);
 	}
+
+	render();
 }
 
 ////////////////////////////////////////////////////////////
@@ -227,4 +196,29 @@ void GameplayScene::render()
 	m_graphRenderer->draw(*m_window);
 
 	m_window->display();
+}
+
+////////////////////////////////////////////////////////////
+
+void GameplayScene::scrollView(sf::Time t_dT)
+{
+	sf::View v = m_window->getView();
+	float zoom = RESOLUTION.x / v.getSize().x;
+	sf::Vector2f center = v.getCenter();
+
+	sf::Vector2i mousePos = sf::Mouse::getPosition(*m_window);
+	sf::Vector2f worldPos = m_window->mapPixelToCoords(mousePos);
+
+	sf::Vector2f delta = center - worldPos;
+	float len = sqrt(delta.x * delta.x + delta.y * delta.y);
+
+	if (len > zoom / 200.f) {
+		sf::Vector2f newPos = (center * 0.999f) + (worldPos * 0.001f);
+		newPos.x = std::clamp(newPos.x, 540.f / zoom, 1080.f - (540.f / zoom));
+		newPos.y = std::clamp(newPos.y, 540.f / zoom, 1080.f - (540.f / zoom));
+
+		v.setCenter(newPos);
+
+		m_window->setView(v);
+	}
 }
