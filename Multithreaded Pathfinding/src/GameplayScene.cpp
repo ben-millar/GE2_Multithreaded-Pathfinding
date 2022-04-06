@@ -6,7 +6,7 @@ GameplayScene::GameplayScene() :
 	DEBUG_INFO("Creating " << typeid(*this).name());
 
 	// Leave one thread available for the main thread
-	m_threadPool = new ThreadPool(7);
+	m_threadPool = new ThreadPool(std::thread::hardware_concurrency() - 1);
 
 	m_graph = new Graph(GRID_SIZE, GRID_SIZE);
 	m_graphRenderer = new GraphRenderer({ 1080,1080 }, m_graph);
@@ -57,7 +57,7 @@ void GameplayScene::processEvents()
 				return;
 				break;
 			case sf::Keyboard::Space:
-				findPath();
+				m_threadPool->submit([&]() {findPath(); });
 				break;
 			default:
 				break;
@@ -102,11 +102,6 @@ void GameplayScene::processEvents()
 				v.setSize({ m_screenBounds.width, m_screenBounds.height });
 
 			m_window->setView(v);
-		}
-
-		if (e.type == sf::Event::MouseMoved)
-		{
-			
 		}
 	}
 }
@@ -173,8 +168,6 @@ void GameplayScene::drawPath(std::shared_ptr<Pathfinder::Path> t_path)
 		t_path->pop();
 		m_graphRenderer->setColor(index, color);
 	}
-
-	render();
 }
 
 ////////////////////////////////////////////////////////////
@@ -212,7 +205,7 @@ void GameplayScene::scrollView(sf::Time t_dT)
 	sf::Vector2f delta = center - worldPos;
 	float len = sqrt(delta.x * delta.x + delta.y * delta.y);
 
-	if (len > zoom / 200.f) {
+	if (len > 200.f / zoom) {
 		sf::Vector2f newPos = (center * 0.999f) + (worldPos * 0.001f);
 		newPos.x = std::clamp(newPos.x, 540.f / zoom, 1080.f - (540.f / zoom));
 		newPos.y = std::clamp(newPos.y, 540.f / zoom, 1080.f - (540.f / zoom));
