@@ -49,7 +49,7 @@ public:
 	/// <summary>
 	/// Sets or unsets a wall at the given point (DEFAULT: set)
 	/// </summary>
-	void toggleWall(int t_index);
+	void toggleWall(int t_index, bool t_wall=true);
 
 	/// <summary>
 	/// Get a pointer to the c-style cost array (mutable)

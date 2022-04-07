@@ -64,5 +64,7 @@ private:
     int m_player{ 0 };
 
     std::vector<int> m_NPCs;
+
+    bool m_placingWalls, m_removingWalls;
 };
 #endif

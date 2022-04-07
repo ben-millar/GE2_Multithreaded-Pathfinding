@@ -74,6 +74,22 @@ void GraphRenderer::toggleWall(int t_index)
 
 ////////////////////////////////////////////////////////////
 
+void GraphRenderer::placeWall(int t_index)
+{
+	m_walls.insert(t_index);
+	setColor(t_index, sf::Color::Black);
+}
+
+////////////////////////////////////////////////////////////
+
+void GraphRenderer::removeWall(int t_index)
+{
+	m_walls.erase(t_index);
+	setColor(t_index);
+}
+
+////////////////////////////////////////////////////////////
+
 void GraphRenderer::updateNPCs(std::vector<int>* t_vec)
 {
 	for (int const& index : m_NPCpositions)

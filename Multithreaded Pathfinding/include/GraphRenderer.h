@@ -42,6 +42,10 @@ public:
 
 	void toggleWall(int t_index);
 
+	void placeWall(int t_index);
+
+	void removeWall(int t_index);
+
 	void updateNPCs(std::vector<int>* t_vec);
 
 	void setPlayerIndex(int t_index);
@@ -78,6 +82,11 @@ private:
 	std::unordered_set<int> m_walls;
 	std::vector<int> m_NPCpositions;
 	int m_playerPos;
+
+	struct Interlock
+	{
+		bool adding, removing, placing;
+	} m_wallInterlock;
 };
 
 #endif

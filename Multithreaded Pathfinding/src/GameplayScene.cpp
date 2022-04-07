@@ -64,6 +64,23 @@ void GameplayScene::processEvents()
 				break;
 			}
 		}
+		
+		if (e.type == sf::Event::MouseButtonPressed)
+		{
+			sf::Vector2i pixelPos = sf::Mouse::getPosition(*m_window);
+			sf::Vector2f worldPos = m_window->mapPixelToCoords(pixelPos);
+			int index = mouseClickToIndex(worldPos);
+
+			switch (e.mouseButton.button)
+			{
+			case sf::Mouse::Middle:
+				if (m_graph->isTraversible(index))
+					m_placingWalls = true;
+				else
+					m_removingWalls = true;
+				break;
+			}
+		}
 
 		if (e.type == sf::Event::MouseButtonReleased)
 		{
@@ -81,8 +98,8 @@ void GameplayScene::processEvents()
 					m_graphRenderer->setPlayerIndex(m_player);
 					break;
 				case sf::Mouse::Middle:
-					m_graph->toggleWall(index);
-					m_graphRenderer->toggleWall(index);
+					m_placingWalls = false;
+					m_removingWalls = false;
 					break;
 				case sf::Mouse::Right:
 					m_NPCs.push_back(index);
@@ -113,6 +130,24 @@ void GameplayScene::update(sf::Time t_dT)
 {
 	if (m_window->hasFocus())
 		scrollView(t_dT);
+
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
+	{
+		sf::Vector2i mousePos = sf::Mouse::getPosition(*m_window);
+		sf::Vector2f worldPos = m_window->mapPixelToCoords(mousePos);
+		int index = mouseClickToIndex(worldPos);
+
+		if (m_placingWalls)
+		{
+			m_graph->toggleWall(index, true);
+			m_graphRenderer->placeWall(index);
+		}
+		else if (m_removingWalls)
+		{
+			m_graph->toggleWall(index, false);
+			m_graphRenderer->removeWall(index);
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////

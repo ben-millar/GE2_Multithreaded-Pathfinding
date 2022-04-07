@@ -48,10 +48,10 @@ size_t Graph::mouseClickToIndex(sf::Vector2f t_position)
 
 ////////////////////////////////////////////////////////////
 
-void Graph::toggleWall(int t_index)
+void Graph::toggleWall(int t_index, bool t_wall)
 {
 	// Set our point to be either traversible or not
-	m_isTraversible[t_index] = !m_isTraversible[t_index];
+	m_isTraversible[t_index] = !t_wall;
 	Point p = indexToPoint(t_index);
 
 	std::vector<int> all_neighbours;
