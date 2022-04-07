@@ -65,6 +65,6 @@ private:
 
     std::vector<int> m_NPCs;
 
-    bool m_placingWalls, m_removingWalls;
+    bool m_placingWalls{false}, m_removingWalls{false};
 };
 #endif
